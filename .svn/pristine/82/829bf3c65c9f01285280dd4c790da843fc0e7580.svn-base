@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@mipmap/feeds_list_bg"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_margin="@dimen/space_10">
+
+    <ImageView
+
+        android:id="@+id/imgurl_imageview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerInside"
+        android:src="@mipmap/gift_default_logo" />
+    <TextView
+        android:id="@+id/giftname_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:text="京东50元礼品卡"
+        android:textColor="@color/text_main"
+        android:textSize="@dimen/text_24" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/points_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="123"
+            android:textColor="#f34e4a"
+            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"
+            android:textSize="@dimen/text_24" />
+        <TextView
+            android:id="@+id/jifen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="积分"
+            android:layout_toRightOf="@+id/points_tv"
+            android:layout_centerVertical="true"
+            android:textColor="@color/text_sub"
+            android:textSize="@dimen/text_24" />
+        <Button
+            android:id="@+id/buy_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/jifen"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="@dimen/space_10"
+            android:layout_alignParentRight="true"
+            android:text="兑换"/>
+
+    </RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,130 @@
+package com.talenton.lsg.ui.feed;
+
+import android.content.Context;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.talenton.lsg.BaseCompatFragment;
+import com.talenton.lsg.R;
+import com.talenton.lsg.ui.message.MsgActivity;
+
+import java.util.HashMap;
+
+
+public class FeedsListFragment extends BaseCompatFragment implements View.OnClickListener{
+
+    private TextView mCircle,mTopic;
+    //protected Toolbar mToolbar;
+    private LinearLayout mSearch;
+
+    @Override
+    public void onAttach(Context context) {
+        // TODO Auto-generated method stub
+        super.onAttach(context);
+        if (context instanceof View.OnClickListener) {
+
+        } else {
+
+        }
+    }
+
+    static public FeedsListFragment newInstance() {
+        FeedsListFragment f = new FeedsListFragment();
+        f.isLazyMode = true;
+        return f;
+    }
+
+    public FeedsListFragment(){
+
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroy() {
+        // TODO Auto-generated method stub
+        super.onDestroy();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // image_detail_fragment.xml contains just an ImageView
+        super.onCreateView(inflater, container, savedInstanceState);
+        View v = inflater.inflate(R.layout.fragment_feeds_list, container, false);
+        //mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
+        mCircle = (TextView)v.findViewById(R.id.tv_circle);
+        mTopic = (TextView)v.findViewById(R.id.tv_feeds);
+        mSearch = (LinearLayout)v.findViewById(R.id.layout_search);
+        v.findViewById(R.id.iv_search).setOnClickListener(this);
+        //mSearch.setOnClickListener(this);
+        mCircle.setOnClickListener(this);
+        mTopic.setOnClickListener(this);
+        mCircle.performClick();
+        return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        // TODO Auto-generated method stub
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.main_menu_feed;
+    }
+
+    @Override
+    protected int getLeftImageResourceId() {
+        return 0;
+    }
+
+    protected void onRightClick(MenuItem item) {
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        switch (v.getId()){
+            case R.id.tv_circle:
+                fragmentTransaction.show(fragmentManager.findFragmentById(R.id.circle_fragment_feed))
+                        .hide(fragmentManager.findFragmentById(R.id.circle_fragment_topic))
+                        .commitAllowingStateLoss();
+                mCircle.setTextColor(Color.parseColor("#0082C8"));
+                mTopic.setTextColor(Color.parseColor("#FFFFFF"));
+                mCircle.setBackgroundResource(R.drawable.btn_circle_conner_half_press);
+                mTopic.setBackgroundResource(R.drawable.btn_topic_conner_half);
+                mSearch.setVisibility(View.INVISIBLE);
+                break;
+            case R.id.tv_feeds:
+                fragmentTransaction.show(fragmentManager.findFragmentById(R.id.circle_fragment_topic))
+                        .hide(fragmentManager.findFragmentById(R.id.circle_fragment_feed))
+                        .commitAllowingStateLoss();
+                mCircle.setTextColor(Color.parseColor("#FFFFFF"));
+                mTopic.setTextColor(Color.parseColor("#0082C8"));
+                mCircle.setBackgroundResource(R.drawable.btn_circle_conner_half);
+                mTopic.setBackgroundResource(R.drawable.btn_topic_conner_half_press);
+                mSearch.setVisibility(View.VISIBLE);
+                break;
+            case R.id.iv_search:
+                SearchCircleActivity.startSearchCircleActivity(getActivity());
+                break;
+        }
+    }
+}

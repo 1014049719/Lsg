@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context="com.talenton.lsg.ui.feed.InviteAttentionActivity">
+    <ViewStub
+        android:id="@+id/vs_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/global_app_bar" />
+    <View
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_weight="2" />
+    <TextView
+        android:id="@+id/tvNotice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/circle_invite_code"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/text_28" />
+    <View
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <TextView
+        android:id="@+id/tv_invite_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/text_red"
+        android:textSize="24sp" />
+
+    <TextView
+        style="@style/comment_btn_style"
+        android:id="@+id/tv_invite_code_again"
+        android:gravity="center"
+        android:text="@string/circle_get_invite_code_again"
+        android:layout_margin="@dimen/space_7_5"
+        android:textSize="@dimen/text_28"
+        android:visibility="invisible" />
+    <View
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_weight="2" />
+    <TextView
+        android:id="@+id/tv_introduce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/space_7_5"
+        android:layout_marginRight="@dimen/space_7_5"
+        android:text="@string/circle_hint_invite_notice"
+        android:textColor="@color/text_sub"
+        android:textSize="@dimen/text_28" >
+    </TextView>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_weight="8" />
+    <LinearLayout
+        android:id="@+id/invite_by_qq"
+        style="@style/comment_btn_style"
+        android:layout_width="match_parent"
+        android:layout_marginLeft="@dimen/space_7_5"
+        android:layout_marginRight="@dimen/space_7_5"
+        android:background="@drawable/btn_login_qq_selector"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:onClick="onClick">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/login_qq"
+            android:drawablePadding="4dp"
+            android:text="@string/circle_invite_by_sms_qq"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_34" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/invite_by_wechat"
+        style="@style/comment_btn_style"
+        android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/space_10_0"
+        android:layout_marginLeft="@dimen/space_7_5"
+        android:layout_marginRight="@dimen/space_7_5"
+        android:background="@drawable/btn_login_wechat_selector"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:onClick="onClick">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/login_weixin"
+            android:drawablePadding="4dp"
+            android:text="@string/circle_invite_by_sms_wechat"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_34" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/invite_by_phone"
+        style="@style/comment_btn_style"
+        android:layout_width="match_parent"
+        android:layout_marginTop="@dimen/space_10_0"
+        android:layout_marginLeft="@dimen/space_7_5"
+        android:layout_marginRight="@dimen/space_7_5"
+        android:background="@drawable/btn_login_phone_selector"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:onClick="onClick">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@mipmap/login_phone"
+            android:drawablePadding="4dp"
+            android:text="@string/circle_invite_by_sms_code"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_34" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_weight="2" />
+</LinearLayout>

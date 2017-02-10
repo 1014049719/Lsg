@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "/Users/wangtianhong/Desktop/Lsg/library-pdfview/build/intermediates/res/merged/release/raw/armeabi.so",
+        "source": "/Users/wangtianhong/Desktop/Lsg/library-pdfview/build/intermediates/exploded-aar/Lsg/library-native/unspecified/res/raw/armeabi.so"
+    },
+    {
+        "merged": "/Users/wangtianhong/Desktop/Lsg/library-pdfview/build/intermediates/res/merged/release/raw/x86.so",
+        "source": "/Users/wangtianhong/Desktop/Lsg/library-pdfview/build/intermediates/exploded-aar/Lsg/library-native/unspecified/res/raw/x86.so"
+    },
+    {
+        "merged": "/Users/wangtianhong/Desktop/Lsg/library-pdfview/build/intermediates/res/merged/release/raw/armeabi_v7a.so",
+        "source": "/Users/wangtianhong/Desktop/Lsg/library-pdfview/build/intermediates/exploded-aar/Lsg/library-native/unspecified/res/raw/armeabi_v7a.so"
+    }
+]

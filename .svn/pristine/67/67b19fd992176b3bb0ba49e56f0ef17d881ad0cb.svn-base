@@ -1,0 +1,21 @@
+package com.talenton.lsg.server.bean.discovery;
+
+/**
+ * Created by Administrator on 2016/4/11.
+ */
+public class ShopList {
+
+    /**
+     * blogid : 2
+     * subject : 开始活动了
+     * dateline : 1460529717
+     * attachment :  xxxxxxl
+     * mendian_addr : 青秀山上东国际
+     */
+
+    public String blogid;
+    public String subject;
+    public String dateline;
+    public String attachment;
+    public String mendian_addr;
+}

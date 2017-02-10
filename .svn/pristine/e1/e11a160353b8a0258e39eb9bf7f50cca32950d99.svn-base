@@ -1,0 +1,15 @@
+package com.talenton.lsg.event;
+
+public class CommentingEvent {
+	public int dtype;
+	public String guid;
+	public String cguid;
+	public int h;
+
+	public CommentingEvent(int dtype, String guid, String cguid,int h) {
+		this.dtype = dtype;
+		this.guid = guid;
+		this.cguid = cguid;
+		this.h = h;
+	}
+}

@@ -1,0 +1,67 @@
+package com.talenton.lsg.ui.user;
+
+import android.os.Bundle;
+import android.widget.GridView;
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.LsgApplication;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.util.AppLogger;
+import com.talenton.lsg.server.MineServer;
+import com.talenton.lsg.server.bean.user.RspShopPoints;
+import com.talenton.lsg.server.bean.user.ShopPoints;
+import com.talenton.lsg.server.bean.user.ShopPointsParam;
+import com.talenton.lsg.ui.user.adapter.ShopPointsAdapter;
+import java.util.LinkedList;
+
+public class ShopPointsActivity extends BaseCompatActivity {
+
+    //声明
+    GridView gridView;
+    //适配器
+    ShopPointsAdapter adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_shop_points);
+
+        //请求网络
+        getShopPointsData();
+        //实例化
+        gridView = (GridView) findViewById(R.id.gridView);
+        //装载适配器
+        adapter = new ShopPointsAdapter(LsgApplication.getAppContext(), new LinkedList<ShopPoints>());
+        gridView.setAdapter(adapter);
+
+    }
+
+    //请求网络
+    protected void getShopPointsData() {
+
+        ShopPointsParam shopPointsParam = new ShopPointsParam();
+        MineServer.getShopPointsData(shopPointsParam, new XLTResponseCallback<RspShopPoints>() {
+            @Override
+            public void onResponse(RspShopPoints data, XLTError error) {
+
+                if (error==null && data!=null){
+
+                        //先清空，再刷新
+                        adapter.clear();
+                        adapter.setDatas(data.list);
+                        adapter.notifyDataSetChanged();
+                }else {
+                    AppLogger.d("积分商城列表数据请求错误");
+                }
+            }
+        });
+    }
+
+    //设置导航栏
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.shoppoints_title;
+    }
+
+}

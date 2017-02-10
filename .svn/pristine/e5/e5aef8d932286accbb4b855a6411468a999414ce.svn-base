@@ -1,0 +1,1 @@
+include ':app', ':DaoGenerator', ':libray-base', ':library-Refresh', ':library-pdfview', ':library-ijkplayer', ':library-7z', ':library-native', ':library-player'

@@ -1,0 +1,25 @@
+package com.talenton.lsg.server.bean.shop;
+
+/**
+ * Created by xiaoxiang on 2016/4/20.
+ */
+public class SendDiscountGoodsData {
+ //   public final static String URL = "mobile/goods_list.php?cmdcode=42";
+    public final static String URL = "mobile/goods_list.php?type=1";
+    public SendDiscountGoodsData(){};
+/*
+    public int type;
+    public int orderprice;
+    public int orderdateline;
+
+    public int page;
+
+    public SendDiscountGoodsData(int type ,int orderprice,int orderdateline,int page){
+        this.type=type;
+        this.orderprice=orderprice;
+        this.orderdateline=orderdateline;
+        this.page=page;
+    }
+
+*/
+}

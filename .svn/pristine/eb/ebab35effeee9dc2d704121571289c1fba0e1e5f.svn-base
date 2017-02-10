@@ -1,0 +1,23 @@
+package com.talenton.lsg.server.bean.school.event;
+
+import com.talenton.lsg.server.bean.school.ClassData;
+
+/**
+ * @author zjh
+ * @date 2016/5/10
+ */
+public class JoinClassEvent {
+    public JoinClassEvent(ClassData classData) {
+        this.classData = classData;
+    }
+
+    private ClassData classData;
+
+    public ClassData getClassData() {
+        return classData;
+    }
+
+    public void setClassData(ClassData classData) {
+        this.classData = classData;
+    }
+}

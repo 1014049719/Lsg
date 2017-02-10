@@ -1,0 +1,11 @@
+package com.talenton.lsg.event;
+
+public class DeleteCommentEvent {
+	public long tid;
+	public long ctid;
+
+	public DeleteCommentEvent(long tid, long ctid) {
+		this.tid = tid;
+		this.ctid = ctid;
+	}
+}

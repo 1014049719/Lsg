@@ -1,0 +1,17 @@
+package com.talenton.lsg.server.bean.operation;
+
+/**
+ * Created by ttt on 2016/4/5.
+ */
+public class HomeAdvertisement {
+
+    public int id; //记录id,
+    public String pagePic;//启动页图片地址,
+    public String pageUrl;//启动页跳转url,
+    public int showTime;//显示秒数,
+    public int appType;//0-家长端、1-教师端、2-园长端,
+    public int isDefault;// 是否为默认 0 否 1 是
+    public int isShowCountdown;//是否显示倒计时 0 不显示 1 显示
+    public int isAutoRedirect; //是否重定向 0 否 1 是
+    public boolean isClick;
+}

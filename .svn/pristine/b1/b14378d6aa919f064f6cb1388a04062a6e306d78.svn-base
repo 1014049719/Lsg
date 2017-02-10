@@ -1,0 +1,58 @@
+package com.talenton.lsg.ui.user.adapter;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.util.ImageLoaderManager;
+import com.talenton.lsg.server.bean.user.ShopPoints;
+import com.talenton.lsg.widget.adapter.LSGBaseAdapter;
+import java.util.List;
+
+/**
+ * Created by Wang.'''' on 2016/5/6.
+ */
+public class ShopPointsAdapter extends LSGBaseAdapter<ShopPoints>{
+
+    public ShopPointsAdapter(Context context, List datas) {
+        super(context, datas);
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        ShopPoints shopPoints= (ShopPoints) getItem(position);
+        ViewHolder viewHloder=null;
+        if (viewHloder==null){
+
+            viewHloder=new ViewHolder();
+            convertView= LayoutInflater.from(context).inflate(R.layout.shoppoints_cell,null);
+            viewHloder.imgurlImageView= (ImageView) convertView.findViewById(R.id.imgurl_imageview);
+            viewHloder.giftnameTV= (TextView) convertView.findViewById(R.id.giftname_tv);
+            viewHloder.pointsTV= (TextView) convertView.findViewById(R.id.points_tv);
+            convertView.setTag(viewHloder);
+        }else {
+
+            viewHloder= (ViewHolder) convertView.getTag();
+        }
+
+        //获取网络图片
+        ImageLoader.getInstance().displayImage(shopPoints.imgurl, viewHloder.imgurlImageView, ImageLoaderManager.DEFAULT_IMAGE_DISPLAYER3);
+
+        viewHloder.giftnameTV.setText(shopPoints.giftname);
+        viewHloder.pointsTV.setText(shopPoints.points);
+
+        return convertView;
+    }
+
+    class ViewHolder{
+
+        ImageView imgurlImageView;
+        TextView giftnameTV;
+        TextView pointsTV;
+    }
+}

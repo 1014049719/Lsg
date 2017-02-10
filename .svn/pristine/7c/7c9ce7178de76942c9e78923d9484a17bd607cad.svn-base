@@ -1,0 +1,622 @@
+package com.talenton.lsg.server.bean.message;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.PixelFormat;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.base.AppConfig;
+import com.talenton.lsg.base.server.UserServer;
+import com.talenton.lsg.base.server.bean.UserInfo;
+import com.talenton.lsg.server.bean.feed.PostToParam;
+import com.talenton.lsg.ui.school.ClassDetailActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
+
+
+public class CustomMessageData {
+    /*
+    填content string 内容
+    type  int      消息类型 (根据推送表获得,通知或消息)
+    style Style类型   (填1)
+    action ClickAction类型  (ClickAtion::TYPE_ACTIVITY)
+    custom MAP类型 ，"op":1,"url":"xxxxxx"   (读取omode字段和url字段)
+    (op用于指示APP做相应的处理，关联URL中包含对应的处理
+    op 和omode 处理方式 (用于指示APP做相应的处理，关联url中包含对应的处理 )
+        1：打开URL页面 (url域内是url)
+        2: 打开动态详情页面(url域内是动态guid)
+        3: 不用处理
+        4:打开亲友团页面(没用到url)
+        5:跳转我[我的]TAB (没用到url)
+        6.跳转到每日报告录入(url内是早餐、中餐、学习等8项内容) (后台推送任务生成)
+        7.跳转到拍照提醒(没用到url)                            (后台推送任务生成)
+        8.跳转到我的积分明细页面(没用到url)
+        9.跳转到我的乐豆明细页面(没用到url)
+        10.跳转到每日报告详情页面(url是宝宝UID和日期,格式为{“uid”:”xxx”,”d”:”yyyymmdd”})
+     (url对应op需要的内容,如动态guid/URL/亲友ID等)
+         11.下线通知，弹出提示框（url内容是 {"id":"最后登录设备号","os":"类型(1:iphone 2:android)","lt":"登录时间"} ）
+         12.跳转到礼物商店页面（baobaouid 选填，后端提供时，圈主就跳自己宝宝，非圈主跳当前宝宝）
+        13．跳转到亲友团页面(url域内是{“baobaouid”:”宝宝ID”,”uid”:”亲友ID”,”realname”:”亲友名称”})
+        14．跳转到宝宝圈-宝宝页（url内容是:{"dtype":"动态类别","baobaouid":"","classuid":"","schoolid":""}dtype必填，各种ID选填。）
+        15．跳转到成长书首页（baobaouid 选填，后端提供时，圈主就跳自己宝宝，非圈主跳当前宝宝）
+        16．跳转到成长书预览（电子版）（baobaouid 选填，后端提供时，圈主就跳自己宝宝，非圈主跳当前宝宝）
+        17．跳转到家园-育儿（育儿原生页面）
+        18. 跳转到邀请亲页面（url内容是空）
+        19. 跳转到邀请管理页面
+        20. 跳转到【我要制作未来的你】页面（baobaouid 选填，后端不提供时，圈主就跳自己宝宝，非圈主跳当前宝宝）
+        21. 跳转到【我的等级】（url内容是空）
+        22. 跳转到【关注列表】（url内容是空）
+        23. 跳转到【上传照片】（baobaouid 选填，后端不提供时，圈主就跳自己宝宝，非圈主跳当前宝宝）
+        24. 跳转到【上传视频】（baobaouid 选填，后端不提供时，圈主就跳自己宝宝，非圈主跳当前宝宝)
+        25. 跳转到【批量导入相片】（baobaouid 选填，后端不提供时，圈主就跳自己宝宝，非圈主跳当前宝宝)
+        26.跳转到指定课程(URL内容为：{“aid”:1}必填，跳转到的课程ID)
+        27.跳转到指定商品(URL内容为：{“shopid”:1}必填，跳转到的商品ID)
+        28.跳转到指定圈子(URL内容为：{“circle_id”:1}必填，跳转到的圈子ID)
+    */
+    public static final int MSG_OPEN_URL = 1;
+    public static final int MSG_OPEN_DYNAMIC = 2;
+    public static final int MSG_NOT_DISPOSE = 3;
+    public static final int MSG_OPEN_FAMILY = 4;
+    public static final int MSG_OPEN_MINE = 5;
+    public static final int MSG_OPEN_DAILY_REPORT = 6;
+    public static final int MSG_OPEN_PHOTO_REMINED = 7;
+    public static final int MSG_OPEN_INTEGRAL = 8;
+    public static final int MSG_OPEN_BEANFUN = 9;
+    public static final int MSG_OPEN_DAILY_REPORT_DETAIL = 10;
+    public static final int MSG_LOGOFF_NOTIFICATION = 11;
+    public static final int MSG_OPEN_GIFT = 12;
+    public static final int MSG_OPEN_FAMILY_2 = 13;
+    public static final int MSG_OPEN_BABY_DYNAMIC = 14;
+    public static final int MSG_OPEN_EBOOK = 15;
+    public static final int MSG_OPEN_PREVIEW_EBOOK = 16;
+    public static final int MSG_OPEN_INVITED = 18;
+    public static final int MSG_OPEN_INVITED_MANAGE = 19;
+    public static final int MSG_OPEN_FUTURE = 20;
+    public static final int MSG_OPEN_GROWTHINFO = 21;
+    public static final int MSG_OPEN_MINE_ATTENTIONLIST = 22;
+    public static final int MSG_OPEN_UPLOAD_IMAGE = 23;
+    public static final int MSG_OPEN_UPLOAD_VIDEO = 24;
+    public static final int MSG_OPEN_UPLOAD_IMAGE_GALLERY = 25;
+    public static final int MSG_OPEN_CLASS = 26;
+    public static final int MSG_OPEN_GOODS = 27;
+    public static final int MSG_OPEN_CIRCLE = 28;
+
+    private static final SimpleDateFormat mDateFormatYMDHMS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    public int op;
+    public String url;
+    //public String jsonData;
+
+    public void opAction(final Context context) {
+        if (op == 0 || op == CustomMessageData.MSG_NOT_DISPOSE) return;
+        Intent intent;
+        switch (op) {
+            case CustomMessageData.MSG_OPEN_URL:
+                if (!TextUtils.isEmpty(url)) {
+                    if (!url.startsWith("http://"))
+                        url = AppConfig.HOME_URL + url;
+                    //intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    //context.startActivity(intent);
+//					ActivityWebBrowser.goUrl(context, url, null);
+                    com.talenton.lsg.ui.WebViewActivity.startWebViewActivity(context, url,false);
+                }
+                break;
+            case CustomMessageData.MSG_OPEN_DYNAMIC:
+                if (!TextUtils.isEmpty(url))
+//					FeedsDetailActivity.startFeedsDetailActivity(context, url, 0, -1);
+                    break;
+            case CustomMessageData.MSG_OPEN_FAMILY:
+                if (!TextUtils.isEmpty(url) && UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+//					FriendsActivity.startFriendsActivity(context, Long.parseLong(url));
+                }
+                break;
+            case CustomMessageData.MSG_OPEN_MINE:
+                if (context instanceof BaseCompatActivity)
+//					((BaseCompatActivity)context).setFragmentPosition(3, 0);
+                    break;
+            case CustomMessageData.MSG_OPEN_DAILY_REPORT:
+                if (!TextUtils.isEmpty(url) && UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER) {
+//					CacheFriendListManager.getInstance().initDailyReportItems(context);
+//					DailyReportItem item = CacheFriendListManager.getInstance().getDailyReportItem(url);
+//					if(item != null){
+//						/*
+//						String sUrl=item.url+"&uid="+UserService.getCurrentClassUID()+"&datetime="+DateUtil.timestampToFormatDate(System.currentTimeMillis(), "yyyyMMdd");
+//						ActivityWebBrowser.goUrl(context, sUrl, "");
+//						*/
+//						intent = new Intent("teacher.intent.action.DailyReportListActivity");
+//						intent.putExtra("typeid", item.typeid);
+//						context.startActivity(intent);
+//					}
+                }
+                break;
+            case CustomMessageData.MSG_OPEN_PHOTO_REMINED:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER) {
+                    intent = new Intent("teacher.intent.action.GrowthRecordActivity");
+                    context.startActivity(intent);
+                }
+                break;
+            case CustomMessageData.MSG_OPEN_INTEGRAL:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER
+                        || UserServer.getUsergroupkey() == UserInfo.GROUP_MASTER) {
+//					GiftChangeActivity.startGiftChangeActivity(context);
+                }
+                break;
+            case CustomMessageData.MSG_OPEN_BEANFUN:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER
+                        || UserServer.getUsergroupkey() == UserInfo.GROUP_MASTER) {
+
+//					GiftLedouDetailActivity.startGiftLedouDetailActivity(context);
+                }
+                break;
+            case CustomMessageData.MSG_OPEN_DAILY_REPORT_DETAIL:
+//				openDailyReportDetail(context);
+                break;
+            case MSG_LOGOFF_NOTIFICATION:
+//				logffNotification(context);
+                break;
+            case MSG_OPEN_GIFT:
+                //GiftShopActivity.startGiftShopActivity(context, "-1");
+                break;
+            case MSG_OPEN_FAMILY_2:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+                    long babyuid = 0;
+//					if(TextUtils.isEmpty(url)){
+//						babyuid = getBaobaoUID().uid;
+//					}else{
+//						babyuid = Long.parseLong(url);
+//					}
+//					FriendsActivity.startFriendsActivity(context, babyuid);
+                }
+                break;
+            case MSG_OPEN_BABY_DYNAMIC:
+//				openBabyDynamic(context);
+                break;
+            case MSG_OPEN_EBOOK:
+                openEBook(context);
+                break;
+            case MSG_OPEN_PREVIEW_EBOOK:
+                openPreviewEBook(context);
+                break;
+            case MSG_OPEN_INVITED:
+//				RequestActivity.startRequestActivity(context);
+                break;
+            case MSG_OPEN_INVITED_MANAGE:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+                    intent = new Intent("babygroup.intent.action.VerifyAttentionMyBabyActivity");
+                    context.startActivity(intent);
+                } else if (UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER) {
+                    //RequestManageActivity
+                    intent = new Intent("teacher.intent.action.RequestManageActivity");
+                    context.startActivity(intent);
+                }
+                break;
+            case MSG_OPEN_FUTURE:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+//					long babyuid = 0;
+//					if(TextUtils.isEmpty(url)){
+//						babyuid = getBaobaoUID().uid;
+//					}else{
+//						babyuid = Long.parseLong(url);
+//					}
+//					FutureActivity.startFutureActivity(context, babyuid);
+                }
+                break;
+            case MSG_OPEN_GROWTHINFO:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+                    intent = new Intent("babygroup.intent.action.GrowthInfoActivity");
+                    context.startActivity(intent);
+                }
+                break;
+            case MSG_OPEN_MINE_ATTENTIONLIST:
+                if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+                    intent = new Intent("babygroup.intent.action.AttentionListActivity");
+                    context.startActivity(intent);
+                }
+                break;
+            case MSG_OPEN_UPLOAD_IMAGE:
+            case MSG_OPEN_UPLOAD_VIDEO:
+                int postType = PostToParam.POST_IMAGE;
+                if (op == MSG_OPEN_UPLOAD_VIDEO) {
+                    postType = PostToParam.POST_VIDEO;
+                }
+//				if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+//					BaobaoData baby = getBaobaoUID();
+//					if(!TextUtils.isEmpty(url)){
+//						baby = UserService.getBaobaoById(Long.parseLong(url));
+//					}
+//					PostToParam postToParam = new PostToParam(Feeds.DTYPE_BB, baby, postType);
+//					FeedsPostActivity.startPostFeedsActivity(context, postToParam);
+//				}else {
+//					TeacherPostToActivity.startTeacherPostToActivity((Activity)context, new PostToParam(postType));
+//				}
+                break;
+            case MSG_OPEN_UPLOAD_IMAGE_GALLERY:
+//				if (UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT) {
+//					BaobaoData baby = getBaobaoUID();
+//					if(!TextUtils.isEmpty(url)){
+//						baby = UserServer.getBaobaoById(Long.parseLong(url));
+//					}
+//					AllPicBrowserActivity.startImportGallery(context, new PostToParam(
+//							Feeds.DTYPE_BB, baby, PostToParam.POST_GALLERY));
+//				}else{
+//					TeacherPostToActivity.startTeacherPostToActivity((Activity)context,
+//							new PostToParam(PostToParam.POST_GALLERY));
+//				}
+                break;
+            case MSG_OPEN_CLASS:
+                goClassDetail(context,url);
+                break;
+            case MSG_OPEN_GOODS:
+
+                break;
+            case MSG_OPEN_CIRCLE:
+
+                break;
+        }
+    }
+
+    private boolean isBbgGroup(int appid) {
+        String strAppid = UserServer.ANDROID_APP_ID;
+        if (TextUtils.isEmpty(strAppid)) return false;
+
+        return Integer.parseInt(strAppid) == appid;
+    }
+
+	/* 圈主就跳自己宝宝，非圈主跳当前宝宝 */
+//	private BaobaoData getBaobaoUID() {
+//		com.bbg.base.server.bean.user.RspLogin sRspLogin = UserService.sRspLogin;
+//		if (sRspLogin != null && sRspLogin.baobaodata != null)
+//			for (BaobaoData bb : sRspLogin.baobaodata) {
+//				if(bb.getQx() == BaobaoData.AUTH_MASTER){
+//					return bb;
+//				}
+//			}
+//		return UserService.getCurrentBaobao();
+//	}
+
+    private void openEBook(final Context context) {
+//		if(UserServer.getUsergroupkey() == 0) return;
+//		long babyuid = 0;
+//		int dtype = 0;
+//		int schooluid = 0;
+//		if(!TextUtils.isEmpty(url)){
+//			try {
+//				JSONObject json = new JSONObject(url);
+//				babyuid = json.optLong("baobaouid", 0);
+//				dtype = json.optInt("dtype", Feeds.DTYPE_BB);
+//			} catch (JSONException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		if(UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT)
+//		{
+//			if(TextUtils.isEmpty(url) || babyuid == 0){
+//				babyuid = getBaobaoUID().uid;
+//				dtype = Feeds.DTYPE_BB;
+//			}
+//		}
+//		else if(UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER){
+//			if(TextUtils.isEmpty(url) || babyuid == 0){
+//				babyuid = UserService.getTeacherClass().classid;
+//				dtype = Feeds.DTYPE_CLASS;
+//			}
+//			schooluid = UserServer.getTeacherSchool().schoolid;
+//		}
+//		else if(UserServer.getUsergroupkey() == UserInfo.GROUP_MASTER){
+//			if(TextUtils.isEmpty(url) || babyuid == 0){
+//				babyuid = UserServer.getMasterSchool().schoolid;
+//				dtype = Feeds.DTYPE_SCHOOL;
+//			}
+//		}
+
+//		BookWebviewActivity.startBookWebviewActivity(context, dtype, babyuid, schooluid);
+    }
+
+    private void openPreviewEBook(final Context context) {
+//		if(UserServer.getUsergroupkey() == 0) return;
+//		long babyuid = 0;
+//		int dtype = 0;
+//		if(!TextUtils.isEmpty(url)){
+//			try {
+//				JSONObject json = new JSONObject(url);
+//				babyuid = json.optLong("baobaouid", 0);
+//				dtype = json.optInt("dtype", Feeds.DTYPE_BB);
+//			} catch (JSONException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		if(UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT)
+//		{
+//			if(TextUtils.isEmpty(url) || babyuid == 0){
+//				babyuid = getBaobaoUID().uid;
+//				dtype = Feeds.DTYPE_BB;
+//			}else{
+//				//babyuid = Long.parseLong(url);
+//			}
+//		}
+//		else if(UserServer.getUsergroupkey() == UserInfo.GROUP_TEACHER){
+//			if(TextUtils.isEmpty(url) || babyuid == 0){
+//				babyuid = UserService.getTeacherClass().classid;
+//				dtype = Feeds.DTYPE_CLASS;
+//			}
+//		}
+//		else if(UserService.getUsergroupkey() == UserInfo.GROUP_MASTER){
+//			if(TextUtils.isEmpty(url) || babyuid == 0){
+//				babyuid = UserService.getMasterSchool().schoolid;
+//				dtype = Feeds.DTYPE_SCHOOL;
+//			}
+//		}
+//
+//		PreviewEBookWebActivity.startPreviewEBookWebActivity(context, babyuid, dtype);
+		/*
+		try{
+			JSONObject json = new JSONObject(url);
+			String viewurl = json.optString("viewurl", "");
+			String shareurl = json.optString("shareurl", "");
+			String sharetitle = json.optString("sharetitle", "");
+			String sharecontent = json.optString("sharecontent", "");
+			int baobaouid = json.optInt("baobaouid", 0);
+			if(baobaouid == 0){
+				baobaouid = getBaobaoUID();;
+			}
+			GenerateEBookData gebook = new GenerateEBookData();
+			gebook.viewurl = viewurl;
+			gebook.shareurl = shareurl;
+			gebook.sharetitle = sharetitle;
+			gebook.sharecontent = sharecontent;
+			gebook.baobaouid = baobaouid;
+			PreviewEBookWebActivity.startPreviewEBookWebActivity(context, gebook);
+		}catch(Exception e){
+			//e.printStackTrace();
+		}
+		*/
+    }
+//
+//	private void openBabyDynamic(final Context context){
+//		if(!TextUtils.isEmpty(url)){
+//			try{
+//				JSONObject json = new JSONObject(url);
+//				final int dtype = json.optInt("dtype", 1);
+//				final int babyuid = json.optInt("baobaouid", 0);
+//				int classId = json.optInt("classuid", 0);
+//				int schoolId = json.optInt("schoolid", 0);
+//				if(UserServer.getUsergroupkey() == UserInfo.GROUP_PARENT &&(
+//						dtype == Feeds.DTYPE_BB || dtype == Feeds.DTYPE_CLASS)){
+//					UserServer.reLogin(new XLTResponseCallback<RspLogin>() {
+//						@Override
+//						public void onResponse(RspLogin data, XLTError error) {
+//							// TODO Auto-generated mthod stub
+//							if(dtype == Feeds.DTYPE_CLASS){
+//								EventBus.getDefault().post(new JoinClassEvent());
+//							}else{
+//								if(UserService.setCurrentBaobaoById(babyuid)){
+//									EventBus.getDefault().post(new BabySwitchEvent(babyuid));
+//								}
+//							}
+//							if (UserService.needLogIn()) {
+//								UserService.enfoceManuallyLogIn();
+//							}
+//						}
+//					});
+//				}
+//				BabyFeedsActivity.startBabyFeedsActivity(context, dtype, babyuid, classId, schoolId);
+//
+//			}catch(Exception e){
+//				//e.printStackTrace();
+//			}
+//		}
+//	}
+
+//	private void openDailyReportDetail(final Context context) {
+//		// TODO Auto-generated method stub
+//		if(!TextUtils.isEmpty(url)){
+//			try{
+//				JSONObject json = new JSONObject(url);
+//				String uid = json.optString("uid");
+//				final String date = json.optString("d");
+//				if(uid == null || date == null || date.length() < 7) return;
+//				if(UserService.getUsergroupkey() == 0) return;
+//				BaobaoData baby = null;
+//				if(UserService.getUsergroupkey() == UserInfo.GROUP_PARENT
+//					|| UserService.getUsergroupkey() == UserInfo.GROUP_TEACHER){
+//					if(UserService.sRspLogin == null || UserService.sRspLogin.baobaodata == null) return;
+//
+//					for(BaobaoData b: UserService.sRspLogin.baobaodata){
+//						if(b.uid == Integer.parseInt(uid)){
+//							baby = b;
+//							break;
+//						}
+//					}
+//				}
+//
+//				final String name = (baby != null) ? baby.realname : "";
+//
+//				DailyReportDetailActivity.startDailyReportDetailActivity(context, Long.parseLong(uid), date, name);
+//
+//			}catch(Exception e){
+//				//e.printStackTrace();
+//			}
+//		}
+//	}
+
+//	@SuppressLint("NewApi")
+//	private void logffNotification(final Context context) {
+//		// TODO Auto-generated method stub
+//		if(!TextUtils.isEmpty(url)){
+//			try{
+//				//Log.d("logffNotification", url);
+//				JSONObject json = new JSONObject(url);
+//				String token = json.getString("id");
+//				//Log.d("token:", token);
+//				//Log.d("token2:", Preference.getInstance().getToken());
+//				if(token.equals(Preference.getInstance().getToken(context)))
+//					return;
+//
+//				int os = json.optInt("os");
+//				long it = json.getLong("lt");
+//				Date createDate = new Date(it * 1000);
+//				long currentTime = System.currentTimeMillis();
+//				long timePassed = currentTime / 1000 - it;
+//				String time = "";
+//				if (timePassed < TimeUtil.ONE_DAY){
+//					time = String.format("%s:%s", createDate.getHours(), createDate.getMinutes());
+//				}else{
+//					time = mDateFormatYMDHMS.format(createDate);
+//				}
+//
+//				String msg = String.format("您的账号于%s在一台%s手机登录。如非本人操作，建议拨打客服电话：4000903011 修改密码或紧急冻结账号。"
+//	               		 , time, os==1?"iPhone":"Android");
+//
+//				final CommonAlertDialog dialog = new CommonAlertDialog(context);
+//				dialog.setCancelable(false);
+//				dialog.setCanceledOnTouchOutside(false);
+//				dialog.setTitle("提示");
+//				dialog.setMessage(msg);
+//
+//				dialog.setNegativeButton("重新登录", new OnClickListener(){
+//					@Override
+//					public void onClick(View v) {
+//						// TODO Auto-generated method stub
+//						dialog.dismiss();
+//						UserService.reLogin(true);
+//					}
+//				});
+//				dialog.setPositiveButton("下线", new OnClickListener(){
+//					@Override
+//					public void onClick(View v) {
+//						// TODO Auto-generated method stub
+//						dialog.dismiss();
+//						XLTHttpClientStack.cleanCookieContiner();
+//						Preference.getInstance().saveCookies();
+//						if(UserService.sRspLogin != null){
+//							UserService.setCurrentPassword("");
+//						}
+//						if(context instanceof BaseFragmentActivity){
+//							((BaseFragmentActivity)context).showProgress(R.string.alter_posting_hint);
+//						}
+//						MineServer.exitLogin(new ReqExitLogin(), new XLTResponseCallback<RspPersonalInfo>(){
+//							@Override
+//							public void onResponse(RspPersonalInfo data, XLTError error) {
+//								if(context instanceof BaseFragmentActivity){
+//									((BaseFragmentActivity)context).hideProgress();
+//								}
+//								UserService.reLogin(true);
+//							};
+//						});
+//					}
+//				});
+//				dialog.show();
+				/*
+				boolean exitBackground = false;
+				if(context instanceof BaseFragmentActivity){
+					exitBackground = ((BaseFragmentActivity)context).isCurrentShow();
+				}
+
+				if(!TextUtils.isEmpty(UserService.ANDROID_APP_ID) && exitBackground){
+					Intent intent = null;
+                	if(Integer.parseInt(UserService.ANDROID_APP_ID) == AppConfig.BABY_ANDROID_ID){
+                		intent = new Intent("babygroup.intent.action.MainActivity");
+                	}
+                	else if(Integer.parseInt(UserService.ANDROID_APP_ID) == AppConfig.TEACHER_ANDROID_ID){
+                		intent = new Intent("teacher.intent.action.MainActivity");
+                	}
+                	else if(Integer.parseInt(UserService.ANDROID_APP_ID) == AppConfig.MASTER_ANDROID_ID){
+                		intent = new Intent("master.intent.action.MainActivity");
+                	}
+                	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            		XltbgApplication.getAppContext().startActivity(intent);
+            		//EventBus.getDefault().post(this);
+            		//return;
+                }
+				//XltHttpClientStack.cleanCookieContiner();
+				//Preference.getInstance().saveCookies();
+
+
+				final WindowManager wm = (WindowManager) XltbgApplication.getAppContext().getSystemService("window");
+
+
+                final View mView = LayoutInflater.from(context).inflate(R.layout.dialog_exit_notification, null);
+                TextView mTitleView = (TextView)mView.findViewById(R.id.tv_wm_title);
+                TextView mMessageView = (TextView)mView.findViewById(R.id.tv_wm_message);
+                Button mPositiveButton = (Button) mView.findViewById(R.id.btn_wm_positive);
+                Button mNegativeButton = (Button) mView.findViewById(R.id.btn_wm_negative);
+                wm.addView(mView, getParam());
+                BaseFragmentActivity.setExitBackgroundView(mView);
+                mTitleView.setText("下线通知");
+
+                mMessageView.setText(msg);
+                mNegativeButton.setText("重新登陆");
+                mPositiveButton.setText("下线");
+                mNegativeButton.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        wm.removeView(mView);
+                        BaseFragmentActivity.setExitBackgroundView(null);
+                        UserService.reLogin(true);
+                    }
+                });
+                mPositiveButton.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        wm.removeView(mView);
+                        BaseFragmentActivity.setExitBackgroundView(null);
+                        UserService.reLogin(false);
+                    }
+                });
+                */
+//			}catch(Exception e){
+//				e.printStackTrace();
+//			}
+//		}
+//	}
+
+    public static WindowManager.LayoutParams getParam() {
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+        // 类型
+        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        // WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+        // 设置flag
+        int flags = WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        // 如果设置了WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE，弹出的View收不到Back键的事件
+        params.flags = flags;
+        // 不设置这个弹出框的透明遮罩显示为黑色
+        params.format = PixelFormat.TRANSPARENT;
+        // FLAG_NOT_TOUCH_MODAL不阻塞事件传递到后面的窗口
+        // 设置 FLAG_NOT_FOCUSABLE 悬浮窗口较小时，后面的应用图标由不可长按变为可长按
+        // 不设置这个flag的话，home页的划屏会有问题
+
+        params.width = LayoutParams.MATCH_PARENT;
+        params.height = LayoutParams.MATCH_PARENT;
+        params.gravity = Gravity.CENTER;
+
+        return params;
+    }
+
+    /**
+     * 跳转到课程详情页面
+     * @param context
+     * @param jsonData
+     */
+    private void goClassDetail(Context context,String jsonData){
+        try {
+            long aid = 0;
+            JSONObject jsonObject = new JSONObject(jsonData);
+            if (jsonObject.has("aid")){
+                aid = jsonObject.getLong("aid");
+                ClassDetailActivity.startClassDetailActivity(context,aid);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+}

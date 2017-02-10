@@ -1,0 +1,11 @@
+package com.talenton.lsg.event;
+
+public class DeleteFeedsEvent {
+	public String guid;
+	public long tid;
+
+	public DeleteFeedsEvent(String guid, long tid){
+		this.guid = guid;
+		this.tid = tid;
+	}
+}

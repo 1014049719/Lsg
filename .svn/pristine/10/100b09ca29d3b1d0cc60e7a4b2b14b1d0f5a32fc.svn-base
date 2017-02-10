@@ -1,0 +1,384 @@
+package com.talenton.lsg.ui.user;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.gson.JsonObject;
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.LsgApplication;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.UserServer;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.server.bean.Authority;
+import com.talenton.lsg.base.server.bean.UserInfo;
+import com.talenton.lsg.base.util.ImageLoaderManager;
+import com.talenton.lsg.base.util.NetWorkUtils;
+import com.talenton.lsg.base.util.Preference;
+import com.talenton.lsg.base.util.SystemUtil;
+import com.talenton.lsg.base.widget.CircleImageView;
+import com.talenton.lsg.event.WXLoginEvent;
+import com.talenton.lsg.ui.shop.ManageAdressActivity;
+import com.talenton.lsg.widget.dialog.TipsDialog;
+import com.talenton.lsg.wxapi.LoginHelper;
+import com.tencent.connect.common.Constants;
+import com.tencent.mm.sdk.modelmsg.SendAuth;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.tauth.Tencent;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+public class UserInfoActivity extends BaseCompatActivity implements View.OnClickListener {
+    private CircleImageView iv_avatar;
+    private TextView tv_user_name;
+    private TextView tv_sex;
+    private LinearLayout ll_phone;
+    private TextView tv_phone;
+    private LinearLayout ll_pwd;
+    private LinearLayout ll_wechat;
+    private LinearLayout ll_QQ;
+    private LinearLayout ll_address;
+    private TextView tv_wechat;
+    private TextView tv_QQ;
+
+    private TipsDialog unBindTips;
+
+    private static final int BIND_WX = 1;
+    private static final int BIND_QQ = 2;
+    private static final int UNBUIND_QQ = 3;
+    private static final int UNBUIND_WX = 4;
+    private static final int BIND_PHONE = 5;
+
+    private boolean isBindQQ;
+    private boolean isBindWX;
+    private boolean isBindPhone;
+
+    private final int REQUEST_BIND_PHONE = 1001;
+
+
+
+    public static void startUserInfoActivity(Context context){
+        context.startActivity(new Intent(context, UserInfoActivity.class));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_user_info);
+        EventBus.getDefault().register(this);
+        initView();
+        fillData();
+    }
+
+    private void fillData() {
+        if (!isLogin()){
+            showShortToast("未登录,无账号信息");
+            return;
+        }
+        UserInfo userInfo = UserServer.getCurrentUser();
+        tv_user_name.setText(userInfo.getRealname());
+        ImageLoaderManager.getInstance().displayImage(userInfo.avartar, iv_avatar, ImageLoaderManager.DEFAULT_IMAGE_GRAY_LOADING_DISPLAYER, null, null);
+        tv_sex.setText(getGenderInfo(userInfo.gender));
+        if (userInfo.phone_bind == 1){
+            isBindPhone = true;
+            tv_phone.setText(String.format(getString(R.string.mine_text_phone_bind),userInfo.getUsername()));
+        }
+        if (userInfo.wxbind == 1){
+            isBindWX = true;
+            tv_wechat.setText(getString(R.string.mine_text_wechat_bind));
+        }
+        if (userInfo.qqbind == 1){
+            isBindQQ = true;
+            tv_QQ.setText(getString(R.string.mine_text_QQ_bind));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
+    /**
+     * 获取性别
+     * @param gender
+     * @return
+     */
+    public String getGenderInfo(int gender){
+        String strGender = "";
+        switch (gender){
+            case 0:
+                strGender = getString(R.string.mine_text_gender_secrecy);
+                break;
+            case 1:
+                strGender = getString(R.string.mine_text_gender_male);
+                break;
+            case 2:
+                strGender = getString(R.string.mine_text_gender_female);
+                break;
+        }
+        return strGender;
+    }
+
+    private void initView() {
+        iv_avatar = (CircleImageView) findViewById(R.id.iv_avatar);
+        tv_user_name = (TextView) findViewById(R.id.tv_user_name);
+        tv_sex = (TextView) findViewById(R.id.tv_sex);
+        ll_phone = (LinearLayout) findViewById(R.id.ll_phone);
+        tv_phone = (TextView) findViewById(R.id.tv_phone);
+        ll_pwd = (LinearLayout) findViewById(R.id.ll_pwd);
+        ll_wechat = (LinearLayout) findViewById(R.id.ll_wechat);
+        ll_QQ = (LinearLayout) findViewById(R.id.ll_QQ);
+        ll_address = (LinearLayout) findViewById(R.id.ll_address);
+        tv_wechat = (TextView) findViewById(R.id.tv_wechat);
+        tv_QQ = (TextView) findViewById(R.id.tv_QQ);
+
+        ll_phone.setOnClickListener(this);
+        ll_pwd.setOnClickListener(this);
+        ll_wechat.setOnClickListener(this);
+        ll_QQ.setOnClickListener(this);
+        ll_address.setOnClickListener(this);
+
+        unBindTips = new TipsDialog();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (!isLogin()){
+            showShortToast("未登录,无账号信息");
+            return;
+        }
+        switch (v.getId()){
+            case R.id.ll_phone:
+                //修改手机号绑定
+                BindPhoneActivity.startBindPhoneActivity(this, REQUEST_BIND_PHONE,isBindPhone);
+                break;
+            case R.id.ll_pwd:
+                ModifyPasswordActivity.startModifyPasswordActivity(this,ModifyPasswordActivity.TYPE_MODIFY_PASSWORD);
+                break;
+            case R.id.ll_wechat:
+                if (isBindWX){
+                    unBindTips.setMsg("解除微信绑定后，你将不能用微信登录乐思构了");
+                    unBindTips.setOnClickRightBtnListener(new TipsDialog.OnClickRightBtnListener() {
+                        @Override
+                        public void onClick(View v) {
+                            unBindWX();
+                        }
+                    });
+                    unBindTips.show(getSupportFragmentManager(),"unbindWX");
+                }else {
+                    bindWX();
+                }
+                break;
+            case R.id.ll_QQ:
+                if (isBindQQ){
+                    unBindTips.setMsg("解除QQ绑定后，你将不能用QQ登录乐思构了");
+                    unBindTips.setOnClickRightBtnListener(new TipsDialog.OnClickRightBtnListener() {
+                        @Override
+                        public void onClick(View v) {
+                            unBindQQ();
+                        }
+                    });
+                    unBindTips.show(getSupportFragmentManager(), "unbindQQ");
+                }else {
+                    bindQQ();
+                }
+                break;
+            case R.id.ll_address:
+                ManageAdressActivity.startManageAdressActivity(this);
+                break;
+        }
+    }
+
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.user_info_title;
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(WXLoginEvent event) {
+        if (event == null)
+            return;
+        if ((event.ret) && (event.authtype == Authority.TYPE_WEIXIN)) {
+            try {
+                // 无论是否获得头像昵称，都可以继续登录
+                JsonObject jo = new JsonObject();
+                jo.addProperty("authtype", BIND_WX);
+                jo.addProperty("openid", event.openid);
+                jo.addProperty("nickname", event.nickname);
+                jo.addProperty("avartarurl", event.figureurl);
+                jo.addProperty("access_token", event.access_token);
+                jo.addProperty("mobile", UserServer.getCurrentUser().username);
+                jo.addProperty("appver", SystemUtil.getVersionName());
+                jo.addProperty("ostype", "android");
+                jo.addProperty("osver", android.os.Build.VERSION.RELEASE);
+                jo.addProperty("phonetype", android.os.Build.MODEL);
+                jo.addProperty("appid", UserServer.ANDROID_APP_ID);
+                jo.addProperty("appname", LsgApplication.getInstance().getApplicationInfo().loadLabel(LsgApplication.getAppContext().getPackageManager()).toString());// "宝宝圈";
+                jo.addProperty("token", Preference.getInstance().getToken(LsgApplication.getAppContext()));
+                jo.addProperty("network", NetWorkUtils.getNetworkTypeName(this));
+                jo.addProperty("appsource", SystemUtil.getInstallChannelMetaData());// AppConfig.CHANNEL_NAME;
+                showProgress(R.string.binding_tel_number_binding);
+                UserServer.WXBind(jo.toString(), new XLTResponseCallback<String>() {
+                    @Override
+                    public void onResponse(String data, XLTError error) {
+                        if (error == null) {
+                            hideProgress();
+                            UserServer.sRspLogin.getUserInfo().wxbind = 1;
+                            UserServer.setRspLogin(UserServer.sRspLogin);
+                            updateViews(BIND_WX);
+                        } else {
+                            hideProgress();
+                            showShortToast(error.getMesssage());
+                        }
+
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                showShortToast(event.error);
+            }
+
+        } else if (event.error != null && !TextUtils.isEmpty(event.error)) {
+            showShortToast(event.error);
+        }
+    }
+
+    private void updateViews(int bindType) {
+        switch (bindType){
+            case BIND_QQ:
+                tv_QQ.setText(getString(R.string.mine_text_QQ_bind));
+                break;
+            case BIND_WX:
+                tv_wechat.setText(getString(R.string.mine_text_wechat_bind));
+                break;
+            case BIND_PHONE:
+                tv_phone.setText(String.format(getString(R.string.mine_text_phone_bind),UserServer.sRspLogin.member.username));
+                break;
+            case UNBUIND_QQ:
+                tv_QQ.setText(getString(R.string.mine_text_unbound));
+                break;
+            case UNBUIND_WX:
+                tv_wechat.setText(getString(R.string.mine_text_unbound));
+                break;
+        }
+    }
+
+    private void bindQQ(){
+        LoginHelper.getInstance(this, LoginHelper.ONLY_LOGIN_QQ).login(new XLTResponseCallback<Boolean>() {
+
+            @Override
+            public void onResponse(Boolean data, XLTError error) {
+                if (data) {
+                    showShortToast("QQ登录成功");
+                    showProgress(R.string.binding_tel_number_binding);
+                    UserServer.QQBind(error.getMesssage(), new XLTResponseCallback<String>() {
+                        @Override
+                        public void onResponse(String data, XLTError error) {
+                            if (error == null) {
+                                hideProgress();
+                                UserServer.sRspLogin.getUserInfo().qqbind = 0;
+                                isBindQQ = true;
+                                updateViews(BIND_QQ);
+                            } else {
+                                hideProgress();
+                                showShortToast(error.getMesssage());
+                            }
+
+                        }
+                    });
+                } else if (error != null && !TextUtils.isEmpty(error.getMesssage())) {
+                    showShortToast(error.getMesssage());
+                }
+
+            }
+        });
+    }
+
+    private void unBindQQ(){
+        showProgress("绑定QQ中...");
+        UserServer.unBind(BIND_QQ, new XLTResponseCallback<String>() {
+            @Override
+            public void onResponse(String data, XLTError error) {
+                if (error == null) {
+                    hideProgress();
+                    UserServer.sRspLogin.getUserInfo().qqbind = 0;
+                    isBindQQ = false;
+                    updateViews(UNBUIND_QQ);
+                } else {
+                    hideProgress();
+                    showShortToast(error.getMesssage());
+                }
+
+            }
+        });
+    }
+
+    private void unBindWX(){
+        UserServer.unBind(BIND_WX, new XLTResponseCallback<String>() {
+            @Override
+            public void onResponse(String data, XLTError error) {
+                if (error == null) {
+                    hideProgress();
+                    UserServer.sRspLogin.getUserInfo().wxbind = 0;
+                    isBindWX = false;
+                    updateViews(UNBUIND_WX);
+                } else {
+                    hideProgress();
+                    Toast.makeText(getApplicationContext(), error.getMesssage(), Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+    }
+
+    private void bindWX(){
+        LoginHelper.getInstance(this, LoginHelper.ONLY_LOGIN_WEIXIN).login(new XLTResponseCallback<Boolean>() {
+            //走WXEtryactivity之后用EventBus返回，不走这里。。。
+            @Override
+            public void onResponse(Boolean data, XLTError error) {
+                if (data) {
+                    showProgress(R.string.binding_tel_number_binding);
+                    UserServer.WXBind(error.getMesssage(), new XLTResponseCallback<String>() {
+                        @Override
+                        public void onResponse(String data, XLTError error) {
+                            if (error == null) {
+                                hideProgress();
+                                UserServer.sRspLogin.getUserInfo().wxbind = 1;
+                                isBindWX = true;
+                                updateViews(BIND_WX);
+                            } else {
+                                hideProgress();
+                                Toast.makeText(getApplicationContext(), error.getMesssage(), Toast.LENGTH_LONG).show();
+                            }
+
+                        }
+                    });
+                } else if (error != null && !TextUtils.isEmpty(error.getMesssage())) {
+                    showShortToast(error.getMesssage());
+                }
+            }
+        });
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Constants.REQUEST_LOGIN ||
+                requestCode == Constants.REQUEST_APPBAR) {
+            Tencent.onActivityResultData(requestCode, resultCode, data, LoginHelper.getInstance(this, LoginHelper.ONLY_LOGIN_QQ).getListener());
+        }else if(requestCode == REQUEST_BIND_PHONE && resultCode == RESULT_OK){
+            updateViews(BIND_PHONE);
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+}

@@ -1,0 +1,169 @@
+package com.talenton.lsg.ui.school;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+
+import com.talenton.lsg.BaseListActivity;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.widget.IndicationViewPager;
+import com.talenton.lsg.server.SchoolServer;
+import com.talenton.lsg.server.bean.school.ClassData;
+import com.talenton.lsg.server.bean.school.ClassFilterData;
+import com.talenton.lsg.server.bean.school.ReqAdvertisement;
+import com.talenton.lsg.server.bean.school.ReqClassList;
+import com.talenton.lsg.server.bean.school.ReqClassification;
+import com.talenton.lsg.server.bean.school.RspListClass;
+import com.talenton.lsg.server.bean.school.RspListClassType;
+import com.talenton.lsg.ui.school.adapter.ExperimentalAdapterMy;
+import com.talenton.lsg.widget.AdvertisementView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ExperimentalActivity extends BaseListActivity implements AdapterView.OnItemClickListener {
+    private AdvertisementView ad_view;
+    private IndicationViewPager indication_view_pager;
+    private List<ClassData> uploadClassDatas;
+    private ReqClassList reqClassList;
+    private View listEmptyFooterView; //没有课程时显示提示view
+
+    public static void startExperimentalActivity(Context context){
+        Intent intent = new Intent(context,ExperimentalActivity.class);
+        context.startActivity(intent);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        setContentView(R.layout.activity_school_experimental);
+        super.onCreate(savedInstanceState);
+
+        if (!isTeacher()){
+            showShortToast("您没有权限查看");
+            return;
+        }
+
+        initView();
+        fillAdViewData();
+        fillIndicationViewPagerData();
+        fillListData();
+    }
+
+    /**
+     * 填充列表数据
+     */
+    private void fillListData() {
+        uploadClassDatas = new ArrayList<>();
+        reqClassList = new ReqClassList(ReqClassList.ClassListType.MY_UPLOAD);
+        SchoolServer.SchoolClassListServer schoolClassListServer = new SchoolServer.SchoolClassListServer(reqClassList);
+        startGetData(schoolClassListServer, new ListResponseCallback<RspListClass>() {
+
+            @Override
+            public void onSuccess(RspListClass data) {
+                uploadClassDatas.addAll(data.getList());
+                mAdapter.notifyDataSetChanged();
+                if (data.getList().isEmpty()){
+                    mPullRefreshListView.getRefreshableView().addFooterView(listEmptyFooterView);
+                }else {
+                    mPullRefreshListView.getRefreshableView().removeFooterView(listEmptyFooterView);
+                }
+            }
+
+            @Override
+            public void onError(XLTError error) {
+
+            }
+        });
+        mAdapter = new ExperimentalAdapterMy(this,uploadClassDatas);
+        mPullRefreshListView.getRefreshableView().setAdapter(mAdapter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (ad_view != null){
+            ad_view.onDestroy();
+        }
+        super.onDestroy();
+    }
+
+    private void fillIndicationViewPagerData() {
+        final SchoolServer schoolServer = new SchoolServer();
+        schoolServer.getClassTypeData(new ReqClassification(ReqClassification.PUBLIC_SCHOOL), new XLTResponseCallback<RspListClassType>() {
+            @Override
+            public void onResponse(RspListClassType data, XLTError error) {
+                if (error == null) {
+                    ArrayList<ClassFilterData> classFilterDatas = schoolServer.parseToClassFilterDatas(data.getList());
+                    if (classFilterDatas.size() > 0) {
+                        String[] titles = getTitles(classFilterDatas);
+                        Fragment[] fragments = getFragments(classFilterDatas);
+                        indication_view_pager.setData(getSupportFragmentManager(), titles, fragments, true);
+                    }
+                }
+            }
+        });
+    }
+
+    private String[] getTitles(ArrayList<ClassFilterData> classFilterDatas) {
+        String[] titles = new String[classFilterDatas.size()];
+        for (int i=0; i<classFilterDatas.size(); i++){
+            titles[i] = classFilterDatas.get(i).getTitle();
+        }
+        return titles;
+    }
+
+    private Fragment[] getFragments(ArrayList<ClassFilterData> classFilterDatas){
+        Fragment[] fragments = new Fragment[classFilterDatas.size()];
+        for (int i=0; i<classFilterDatas.size(); i++){
+            ClassFilterData classFilterData = classFilterDatas.get(i);
+            fragments[i] = ExperimentalFilterFragment.newInstance(classFilterData.getClassificationDatas());
+        }
+        return fragments;
+    }
+
+    /**
+     * 填充广告数据
+     */
+    private void fillAdViewData() {
+        ad_view.setData(new ReqAdvertisement(ReqAdvertisement.AD_SCHOOL_EXPERIMENT));
+    }
+    
+    
+
+    private void initView() {
+        View headerView = LayoutInflater.from(this).inflate(R.layout.item_header_school_experimental,null);
+        ad_view = (AdvertisementView) headerView.findViewById(R.id.ad_view);
+        indication_view_pager = (IndicationViewPager) headerView.findViewById(R.id.indication_view_pager);
+        listEmptyFooterView = LayoutInflater.from(this).inflate(R.layout.item_footer_no_upload_class,null);
+
+        mPullRefreshListView.getRefreshableView().addHeaderView(headerView);
+        mPullRefreshListView.setOnItemClickListener(this);
+    }
+
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.school_experimental_title;
+    }
+
+    @Override
+    protected int getPullRefreshListViewResId() {
+        return R.id.list;
+    }
+
+    public IndicationViewPager getIndication_view_pager() {
+        return indication_view_pager;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        position = position - mPullRefreshListView.getRefreshableView().getHeaderViewsCount();
+        ClassData classData = (ClassData) mAdapter.getItem(position);
+        long aid = classData.getAid();
+        ClassDetailActivity.startClassDetailActivity(this,aid);
+    }
+}

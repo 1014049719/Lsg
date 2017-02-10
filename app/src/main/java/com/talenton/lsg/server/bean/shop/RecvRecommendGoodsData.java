@@ -1,0 +1,23 @@
+package com.talenton.lsg.server.bean.shop;
+
+import com.talenton.lsg.server.bean.school.BaseRspList;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created by xiaoxiang on 2016/4/25.
+ */
+
+    public class RecvRecommendGoodsData extends BaseRspList<GoodsInfo> {
+    /*
+        public ArrayList<GoodsInfo> bestlist;
+        public ArrayList<GoodsInfo> promotelist;
+        public ArrayList<GoodsInfo> newslist;
+        public ArrayList<GoodsInfo> hotlist;
+        @Override
+        public List<GoodsInfo> getList() {
+            return newslist;
+        }
+        */
+}

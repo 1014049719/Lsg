@@ -1,0 +1,162 @@
+package com.talenton.lsg.ui.shop;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
+
+import com.handmark.pulltorefresh.library.PullToRefreshWebView;
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.server.ShopServer;
+import com.talenton.lsg.server.bean.shop.GoodsCartInfo;
+import com.talenton.lsg.server.bean.shop.GoodsInfo;
+import com.talenton.lsg.server.bean.shop.SendAddShopCartData;
+
+import java.util.ArrayList;
+
+/**
+ * Created by xiaoxiang on 2016/4/22.
+ */
+/*
+增加收货地址
+ */
+public class GoodsDetailActivity extends BaseCompatActivity implements View.OnClickListener {
+
+
+    private Button add_to_cart;
+    private Button buy_right_now;
+    private PullToRefreshWebView mPullRefreshWebView;
+    private WebView webview;
+    private int goods_id;
+    private GoodsInfo mGoodsInfo;
+    private GoodsCartInfo mSelected;
+    private ArrayList<GoodsCartInfo> mSelectedList;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        setContentView(R.layout.activity_shop_goods_detail);
+        super.onCreate(savedInstanceState);
+        mGoodsInfo=new GoodsInfo();
+        mGoodsInfo =( GoodsInfo)getIntent().getExtras().getSerializable("mGoodsInfo");
+        mSelected=new GoodsCartInfo();
+        //////将goodsinfo的东西转为goodscartinfo;
+        mSelected.goods_id=mGoodsInfo.goods_id;
+        mSelected.goods_price=mGoodsInfo.shop_price;
+        mSelectedList=new ArrayList<GoodsCartInfo>();
+        mSelectedList.add(mSelected);
+//        Log.d("wuxiaoxiang", mGoodsInfo.url);
+       goods_id=mSelected.goods_id;
+                initView();
+
+    }
+
+    public static void startGoodsDetailActivity(Context context, GoodsInfo mGoodsInfo){
+        Intent intent = new Intent(context, GoodsDetailActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("mGoodsInfo", mGoodsInfo);
+        intent.putExtras(bundle);
+        intent.setClass(context, GoodsDetailActivity.class);
+        context.startActivity(intent);
+    }
+
+    /**
+     * 初始化view
+     *
+     * @param
+     */
+    private void initView() {
+
+
+        add_to_cart = (Button) findViewById(R.id.add_to_cart);
+        buy_right_now = (Button) findViewById(R.id.buy_right_now);
+
+        add_to_cart.setOnClickListener(this);
+        buy_right_now.setOnClickListener(this);
+
+        mPullRefreshWebView = (PullToRefreshWebView)findViewById(R.id.help_webview);
+        webview = mPullRefreshWebView.getRefreshableView();
+  //      String url = AppConfig.HOME_URL+urlString;
+        webview.setWebViewClient(new WebViewClient() {
+
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // TODO Auto-generated method stub
+                webview.loadUrl(url);
+                return true;
+            }
+
+        });
+
+    }
+    private void addToShoppingCart() {
+        Log.d("wuxiaoxiang",String.valueOf(goods_id));
+        ShopServer.addMyShopCartData(new SendAddShopCartData(goods_id, 1), new XLTResponseCallback<Object>() {
+
+            @Override
+            public void onResponse(Object data, XLTError error) {
+                // TODO Auto-generated method stub
+                if ((error == null) && (data != null)) {
+
+                } else {
+
+
+                }
+
+            }
+
+        });
+    }
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.shop_text_goods_detail;
+    }
+
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.menu_shop_cart;
+    }
+    @Override
+    protected void onRightClick(MenuItem item) {
+        Intent intent = new Intent();
+        switch (item.getItemId()){
+            case R.id.menu_item_shop_cart:
+                intent.setClass(this, ShoppingCartActivity.class);
+                startActivity(intent);
+                break;
+        }
+    }
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent();
+        switch (v.getId()) {
+            case R.id.add_to_cart:
+                addToShoppingCart();
+
+                break;
+            case R.id.buy_right_now:
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("mSelected", mSelectedList);
+                intent.putExtras(bundle);
+                intent.setClass(GoodsDetailActivity.this, ConfirmOrderActivity.class);
+                startActivity(intent);
+                break;
+
+
+
+
+        }
+    }
+}

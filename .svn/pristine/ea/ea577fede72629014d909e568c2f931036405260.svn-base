@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gray"
+    tools:context="com.talenton.lsg.ui.user.ChildInfoActivity">
+
+    <ViewStub
+        android:id="@+id/vs_action_bar"
+        layout="@layout/global_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- 头像 -->
+            <RelativeLayout
+                android:id="@+id/rl_avator"
+                android:background="@color/white"
+                android:paddingLeft="@dimen/space_15_0"
+                android:paddingRight="@dimen/space_15_0"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_53">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:text="@string/mine_text_avatar"
+                    android:textSize="@dimen/text_32"
+                    android:layout_centerVertical="true" />
+
+                <com.talenton.lsg.base.widget.CircleImageView
+                    android:id="@+id/iv_avatar"
+                    android:layout_width="@dimen/mine_child_avatar_width"
+                    android:layout_height="@dimen/mine_child_avatar_height"
+                    android:src="@mipmap/load_image_gray_bg"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true" />
+            </RelativeLayout>
+
+
+            <!-- 学校 -->
+            <RelativeLayout
+                android:id="@+id/rl_school"
+                android:background="@color/white"
+                android:layout_marginTop="@dimen/space_10_0"
+                android:paddingLeft="@dimen/space_15_0"
+                android:paddingRight="@dimen/space_15_0"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_53">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:text="@string/mine_text_school"
+                    android:textSize="@dimen/text_32"
+                    android:layout_centerVertical="true" />
+
+
+                <TextView
+                    android:id="@+id/tv_school"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:textSize="@dimen/text_32"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true" />
+
+            </RelativeLayout>
+
+            <!-- 班级 -->
+            <RelativeLayout
+                android:id="@+id/rl_class"
+                android:background="@color/white"
+                android:paddingLeft="@dimen/space_15_0"
+                android:paddingRight="@dimen/space_15_0"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_53">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:text="@string/mine_text_class"
+                    android:textSize="@dimen/text_32"
+                    android:layout_centerVertical="true" />
+
+
+                <TextView
+                    android:id="@+id/tv_class"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:textSize="@dimen/text_32"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true" />
+
+            </RelativeLayout>
+
+            <!-- 出生日期 -->
+            <RelativeLayout
+                android:id="@+id/rl_birthday"
+                android:background="@color/white"
+                android:layout_marginTop="@dimen/space_10_0"
+                android:paddingLeft="@dimen/space_15_0"
+                android:paddingRight="@dimen/space_15_0"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/height_53">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:text="@string/mine_text_birthday"
+                    android:textSize="@dimen/text_32"
+                    android:layout_centerVertical="true" />
+
+
+                <TextView
+                    android:id="@+id/tv_birthday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_main"
+                    android:textSize="@dimen/text_32"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true" />
+
+            </RelativeLayout>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+</LinearLayout>

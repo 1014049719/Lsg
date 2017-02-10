@@ -1,0 +1,18 @@
+package com.talenton.lsg.server.bean.feed;
+
+/**
+ * Created by ttt on 2016/4/25.
+ */
+public class CircleMember {
+
+    public static CircleMember EMPTY = new CircleMember();
+
+    public long uid; //用户ID
+    public String avatar; //头像URL
+    public String realname;//用户名
+    public String gxid;// 关系id,
+    public String gxname;// 关系名称
+    public int browse_count;// 访问次数,
+    public long create_time;// 最近访问时间
+
+}

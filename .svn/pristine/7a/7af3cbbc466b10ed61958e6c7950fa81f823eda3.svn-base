@@ -1,0 +1,68 @@
+package com.talenton.lsg.server.bean.feed;
+
+import java.io.Serializable;
+
+public class PostToParam implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3409472189751954047L;
+	public final static int POST_IMAGE = 0;// 图片类型
+	public final static int POST_VIDEO = 1;// 视频类型
+	public final static int POST_GALLERY = 3;// 批量导入类型
+	public final static int POST_TEXT = 4;// 文本类型
+	public final static int POST_HELP = 5;// 求助
+	public long circleId;
+	public int circleType;
+	public int attentionType;
+	public int mediaType,ispajs;
+	public String name;
+	public long tid; //话题ID
+	public String guid;//话题的GUID
+	public int count;
+	public int height;
+	public long commentUID;
+
+	public PostToParam(long circleId, int circleType, long tid, String guid, String name) {
+		super();
+		this.tid = tid;
+		this.circleId = circleId;
+		this.circleType = circleType;
+		this.guid = guid;
+		this.name = name;
+	}
+
+	public PostToParam(int circleType,  long circleId, String name) {
+		this.tid = 0;
+		this.circleType = circleType;
+		this.circleId = circleId;
+		this.name = name;
+	}
+
+	public PostToParam(){
+
+	}
+
+	public void setPostToParam(Feeds feeds) {
+		mediaType = MediaBean.TYPE_PIC;
+		if (feeds.attachinfo != null && feeds.attachinfo.size() > 0) {
+			mediaType = feeds.attachinfo.get(0).itype;
+		}
+		if (mediaType != MediaBean.TYPE_PIC && mediaType != MediaBean.TYPE_VIDEO) {
+			mediaType = MediaBean.TYPE_PIC;
+		}
+		//this.dtype = feeds.dtype;
+		//this.name = feeds.c;
+	}
+
+	public void setIsPajs(int ispajs){
+		this.ispajs = ispajs;
+	}
+
+	public boolean isValid() {
+		return true;
+
+		//return circleType == CircleListData.CIRCLE_TYPE_BABY;
+	}
+
+}

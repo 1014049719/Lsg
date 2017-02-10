@@ -1,0 +1,161 @@
+package com.talenton.lsg.ui.feed.adapter;
+
+import android.content.Context;
+import android.graphics.Color;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.util.ImageLoaderManager;
+import com.talenton.lsg.server.bean.feed.CircleHomeData;
+import com.talenton.lsg.server.bean.feed.CircleListData;
+import com.talenton.lsg.server.bean.feed.MineCircle;
+import com.talenton.lsg.ui.feed.AttentionCircleActivity;
+import com.talenton.lsg.ui.feed.AttentionRecordActivity;
+
+import java.util.LinkedList;
+
+/**
+ * Created by ttt on 2016/4/26.
+ */
+public class CircleHomeAdapter extends BaseAdapter implements View.OnClickListener{
+
+    private LayoutInflater mInflater;
+    private LinkedList<CircleHomeData> mDatas;
+    private Context mContext;
+
+    public CircleHomeAdapter(Context context){
+        mContext = context;
+        mInflater = LayoutInflater.from(context);
+        mDatas = new LinkedList<CircleHomeData>();
+    }
+
+    public void addDatas(LinkedList<CircleHomeData> data){
+        if (data == null || data.size() == 0) return;
+        mDatas.clear();
+        mDatas.addAll(data);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+        return mDatas.size();
+    }
+
+    @Override
+    public CircleHomeData getItem(int position) {
+        return mDatas.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        HolderView holder;
+        if (convertView == null) {
+            holder = new HolderView();
+            convertView = mInflater.inflate(R.layout.item_feed_mine_circle, parent, false);
+            holder.mHoderView = (View)convertView.findViewById(R.id.view_holder);
+            holder.mLayoutInfo = (LinearLayout) convertView.findViewById(R.id.layout_info);
+            holder.mDivColor = (View)convertView.findViewById(R.id.view_div_color);
+            holder.mUserImage = (ImageView)convertView.findViewById(R.id.user_image);
+            holder.mLayoutAttention = (LinearLayout) convertView.findViewById(R.id.layout_attention);
+            holder.mIcon = (ImageView)convertView.findViewById(R.id.iv_attention_icon);
+            holder.mCircleSubject = (TextView)convertView.findViewById(R.id.tv_circle_subject);
+            holder.mCirclePrivate = (TextView)convertView.findViewById(R.id.tv_circle_private);
+            holder.mCircleAttention = (TextView)convertView.findViewById(R.id.tv_circle_attention);
+            holder.mCircleName = (TextView)convertView.findViewById(R.id.tv_circle_name);
+            holder.mCircleNum = (TextView)convertView.findViewById(R.id.tv_circle_num);
+            holder.mCircleDescription = (TextView)convertView.findViewById(R.id.tv_circle_description);
+            holder.mLayoutAttention.setOnClickListener(this);
+            convertView.setTag(holder);
+        }else {
+            holder = (HolderView)convertView.getTag();
+        }
+        holder.mLayoutAttention.setTag(position);
+        CircleHomeData data = getItem(position);
+        if(data.circleTitleResId  == 0){
+            holder.mLayoutInfo.setVisibility(View.GONE);
+            holder.mHoderView.setVisibility(View.GONE);
+            holder.mDivColor.setVisibility(View.GONE);
+        }else{
+            holder.mLayoutInfo.setVisibility(View.VISIBLE);
+            holder.mHoderView.setVisibility(View.VISIBLE);
+            holder.mDivColor.setVisibility(View.VISIBLE);
+
+            holder.mCircleSubject.setText(data.circleTitleResId);
+            //holder.mCirclePrivate
+            if (data.attentionResId > 0){
+                holder.mLayoutAttention.setVisibility(View.VISIBLE);
+                holder.mCircleAttention.setText(data.attentionResId);
+                if (data.attentionResId == R.string.circle_title_new_family){
+                    holder.mIcon.setImageResource(R.mipmap.feeds_add_friend);
+                }else {
+                    holder.mIcon.setImageResource(R.mipmap.feeds_add);
+                }
+            }else {
+                holder.mLayoutAttention.setVisibility(View.GONE);
+            }
+        }
+        if (position == 0){
+            holder.mHoderView.setVisibility(View.GONE);
+            if(data.attentionType !=  MineCircle.ATTENTION_TYPE_CREATE
+                || data.attentionType != MineCircle.ATTENTION_TYPE_CREATE){
+                holder.mLayoutAttention.setVisibility(View.GONE);
+            }
+        }
+        ImageLoader.getInstance().displayImage(data.imageUrl, holder.mUserImage, ImageLoaderManager.DEFAULT_USER_IMAGE_DISPLAYER);
+        holder.mCircleName.setText(data.circleName);
+        if(data.circleDayTopicsNum > 0){
+            holder.mCircleNum.setVisibility(View.VISIBLE);
+            holder.mCircleNum.setText(String.format("今日 : %d", data.circleDayTopicsNum));
+        }else {
+            holder.mCircleNum.setVisibility(View.GONE);
+        }
+        if (data.isPublic){
+            holder.mCirclePrivate.setText(R.string.circle_attr_public);
+            holder.mCirclePrivate.setBackgroundResource(R.drawable.btn_yellow_conner_stroke);
+            holder.mCirclePrivate.setTextColor(Color.parseColor("#3FBB65"));
+        }else {
+            holder.mCirclePrivate.setText(R.string.circle_attr_private);
+            holder.mCirclePrivate.setBackgroundResource(R.drawable.circle_private_conner_stroke);
+            holder.mCirclePrivate.setTextColor(Color.parseColor("#FF8434"));
+        }
+        holder.mCircleDescription.setText(data.circleDescription);
+        return convertView;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.layout_attention:
+                int pos = (int)v.getTag();
+                CircleHomeData data = getItem(pos);
+                if(data.attentionType ==  MineCircle.ATTENTION_TYPE_CREATE) {
+                    if(data.circleType == CircleListData.CIRCLE_TYPE_BABY)
+                        AttentionRecordActivity.startAttentionRecordActivity(mContext, data.circleId);
+                }
+                else{
+                    AttentionCircleActivity.startAttentionCircleActivity(mContext);
+                }
+                break;
+        }
+    }
+
+    private class HolderView{
+        public View mHoderView, mDivColor;
+        public ImageView mUserImage, mIcon;
+        public TextView mCircleSubject, mCircleAttention;
+        public TextView mCircleName, mCirclePrivate, mCircleNum, mCircleDescription;
+        public LinearLayout mLayoutInfo, mLayoutAttention;
+    }
+}

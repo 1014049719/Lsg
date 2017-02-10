@@ -1,0 +1,26 @@
+package com.talenton.lsg.server.bean.discovery;
+
+/**
+ * Created by Administrator on 2016/4/19.
+ */
+public class Action {
+
+
+    /**
+     * blogid : 2
+     * subject : 开始活动了
+     * type : 2
+     * dateline : 1460529717
+     * attachment : xxxx
+     * describe : 大家热闹起来吧人体润 ...
+     */
+
+    public String blogid;
+    public String subject;
+    public String type;
+    public long dateline;
+    public String attachment;
+    public String describe;
+
+
+}

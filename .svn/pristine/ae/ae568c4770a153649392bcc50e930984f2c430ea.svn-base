@@ -1,0 +1,68 @@
+package com.talenton.lsg.ui.user.myOrders;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.ListView;
+
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.LsgApplication;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.util.AppLogger;
+import com.talenton.lsg.server.MineServer;
+import com.talenton.lsg.server.bean.user.MyOrdersParam;
+import com.talenton.lsg.server.bean.user.RspMyOrders;
+import com.talenton.lsg.ui.user.adapter.MyOrdersAdapter;
+
+import java.util.LinkedList;
+
+public class PayingActivity extends BaseCompatActivity {
+
+    //声明
+    private ListView listView;
+    //适配器
+    private MyOrdersAdapter myOrdersAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_paying);
+
+        //请求数据
+        getMyOrdersData();
+        //实例化
+        listView = (ListView) findViewById(R.id.listView);
+        //装载适配器
+        myOrdersAdapter=new MyOrdersAdapter(LsgApplication.getAppContext(),new LinkedList<RspMyOrders>(),"待付款");
+        listView.setAdapter(myOrdersAdapter);
+    }
+
+    //请求数据
+    protected void getMyOrdersData(){
+
+        final MyOrdersParam myOrdersParam=new MyOrdersParam();
+        myOrdersParam.status=1;
+        MineServer.getMyOrdersData(myOrdersParam, new XLTResponseCallback<RspMyOrders>() {
+            @Override
+            public void onResponse(RspMyOrders data, XLTError error) {
+                if (error == null && data != null) {
+                    //清空数据
+                    myOrdersAdapter.clear();
+                    myOrdersAdapter.setDatas(data.list);
+                    myOrdersAdapter.notifyDataSetChanged();
+
+                } else {
+                    AppLogger.d("待付款数据请求错误", error.getMesssage());
+                }
+            }
+        });
+    }
+
+
+    //头部导航
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.paying_title;
+    }
+}

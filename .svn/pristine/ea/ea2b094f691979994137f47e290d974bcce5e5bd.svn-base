@@ -1,0 +1,10 @@
+package com.talenton.lsg.server.bean.discovery;
+
+/**
+ * Created by Wang.'''' on 2016/5/3.
+ */
+public class ActionParam {
+
+    //网络接口
+    public final static String URL="discover.php?mod=action&cmdcode=14";
+}

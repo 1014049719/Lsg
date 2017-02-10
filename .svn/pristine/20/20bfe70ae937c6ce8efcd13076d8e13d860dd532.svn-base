@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.talenton.lsg">
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-feature android:name="android.hardware.camera" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <application
+        android:name=".LsgApplication"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".ui.WelcomeActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity android:name=".ui.school.ClassificationActivity" />
+        <activity
+            android:name=".ui.user.LoginActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity android:name=".ui.user.MyOrderActivity" />
+        <activity android:name=".ui.user.MyPointsActivity" />
+        <activity android:name=".ui.user.MyCollectionActivity" />
+        <activity android:name=".ui.user.BindPhoneActivity" />
+        <activity
+            android:name=".ui.user.RegisterActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ui.user.ModifyPasswordActivity" />
+        <activity android:name=".ui.school.SearchActivity" />
+        <activity
+            android:name=".ui.user.PerfectPersonalInfoActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity android:name=".ui.user.myOrders.AllOrdersActivity" />
+        <activity android:name=".ui.user.myOrders.PayingActivity" />
+        <activity android:name=".ui.user.myOrders.SendingActivity" />
+        <activity android:name=".ui.user.myOrders.ReceivingActivity" />
+        <activity android:name=".ui.user.myOrders.CommentActivity" />
+        <activity
+            android:name=".ui.user.CaptureAndPickActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/activity_dialog"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity android:name=".ui.user.LoginMainActivity" />
+        <activity android:name=".ui.user.SelectSchoolActivity" />
+        <activity android:name=".ui.feed.AttentionRecordActivity" />
+        <activity android:name=".ui.feed.AttentionAgeActivity" />
+        <activity android:name=".ui.feed.AttentionCircleActivity" />
+        <activity android:name=".ui.feed.InviteAttentionActivity" />
+        <activity android:name=".ui.feed.AttentionByOtherActivity" />
+        <activity android:name=".ui.feed.AttentionSchoolBabyActivity" />
+        <activity android:name=".ui.feed.BabyFeedsActivity" />
+        <activity android:name=".ui.feed.CircleFeedsActivity" />
+        <activity
+            android:name=".ui.feed.FeedsDetailActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|stateVisible" />
+        <activity
+            android:name=".ui.feed.FeedsPostActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.feed.image.AllPicBrowserActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustNothing" />
+        <activity
+            android:name=".ui.feed.image.PicturePreviewActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.feed.FeedsTaskActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.feed.FeedsCommentActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Translucent"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+        <activity android:name=".ui.feed.CircleFeedsDetailActivity" />
+        <activity android:name=".ui.feed.CircleRankActivity" />
+        <activity android:name=".ui.feed.SearchCircleActivity" />
+        <activity
+            android:name=".ui.feed.SocialActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Translucent"
+            android:windowSoftInputMode="adjustNothing|stateAlwaysHidden" />
+        <activity
+            android:name=".ui.feed.video.AllVideoBrowserActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustNothing" />
+        <activity
+            android:name=".ui.feed.video.RecorderVideoActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity android:name=".ui.school.ExperimentalActivity" />
+        <!-- ############ shop ############ -->
+        <activity android:name=".ui.shop.DiscountAreaActivity" />
+        <activity android:name=".ui.shop.RecommendAreaActivity" />
+        <activity android:name=".ui.shop.HotAreaActivity" />
+        <activity android:name=".ui.shop.ClassifyAreaActivity" />
+        <activity android:name=".ui.shop.ClassifyAreaDetailActivity" />
+        <activity android:name=".ui.shop.ConfirmOrderActivity" />
+        <activity android:name=".ui.shop.SearchGoodsActivity" />
+        <activity android:name=".ui.shop.ShoppingCartActivity" />
+        <activity android:name=".ui.shop.GoodsDetailActivity" />
+        <activity android:name=".ui.shop.ManageAdressActivity" />
+        <activity android:name=".ui.shop.AddNewAdressActivity" />
+        <activity android:name=".ui.shop.EditAddressActivity" />
+        <activity android:name=".ui.user.ShopPointsActivity" />
+        <!-- ############ shop ############ -->
+        <activity android:name=".ui.school.ClassListActivity" />
+        <activity android:name=".ui.discovery.ActionActivity" />
+        <activity
+            android:name=".ui.school.ClassDetailActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize">
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.VIEW" /> -->
+
+
+            <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+
+
+            <!-- <list android:mimeType="video/*" /> -->
+            <!-- <list android:mimeType="audio/*" /> -->
+            <!-- <list android:scheme="http" /> -->
+            <!-- <list android:scheme="file" /> -->
+            <!-- </intent-filter> -->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.SEND" /> -->
+
+
+            <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+
+
+            <!-- <list android:mimeType="video/*" /> -->
+            <!-- </intent-filter> -->
+        </activity>
+        <activity android:name=".ui.discovery.ShopListActivity" />
+
+        <!-- ############ 微信和支付宝付款############ -->
+        <!-- ping++SDK 注册 -->
+        <activity
+            android:name="com.pingplusplus.android.PaymentActivity"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <!-- 微信支付注册 -->
+        <activity-alias
+            android:name=".wxapi.WXPayEntryActivity"
+            android:exported="true"
+            android:targetActivity="com.pingplusplus.android.PaymentActivity" />
+        <!-- 支付宝注册 -->
+        <activity
+            android:name="com.alipay.sdk.app.H5PayActivity"
+            android:configChanges="orientation|keyboardHidden|navigation"
+            android:exported="false"
+            android:screenOrientation="behind" />
+        <activity
+            android:name="com.alipay.sdk.auth.AuthActivity"
+            android:configChanges="orientation|keyboardHidden|navigation"
+            android:exported="false"
+            android:screenOrientation="behind" />
+
+        <!-- ############ 微信和支付宝付款############ -->
+
+        <activity
+            android:name=".wxapi.WXEntryActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <!-- ############ QQ空间和QQ SSO授权的Activity注册 start ############ -->
+        <activity
+            android:name="com.tencent.tauth.AuthActivity"
+            android:launchMode="singleTask"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <list android:scheme="tencent1105315326" />
+                <!-- 222222 -->
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.tencent.connect.common.AssistActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="behind"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <!-- ############ QQ空间和QQ SSO授权的Activity注册 end ############ -->
+        <activity android:name=".ui.school.CreateEvaluateActivity" />
+        <activity android:name=".ui.discovery.MessageAvtivity" />
+        <activity android:name=".ui.discovery.TestSchoolActivity" />
+        <activity
+            android:name=".ui.school.PDFActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize" />
+        <activity android:name=".ui.ImageDetailViewerActivity" />
+        <activity android:name=".ui.message.MsgActivity" />
+        <activity
+            android:name=".ui.school.PlayerActivity"
+            android:screenOrientation="landscape" />
+        <activity android:name=".widget.WebViewActivity" />
+        <activity
+            android:name=".ui.user.SuggestionActivity"
+            android:windowSoftInputMode="stateHidden|adjustNothing" />
+        <activity android:name=".ui.user.ChildInfoActivity" />
+        <activity android:name=".ui.user.SettingActivity" />
+        <activity android:name=".ui.user.UserInfoActivity" />
+        <activity android:name=".ui.user.InvitationActivity" />
+        <activity android:name=".ui.WebViewActivity" />
+        <activity android:name=".ui.user.HelperListActivity" />
+        <activity android:name=".ui.user.AboutActivity" />
+        <activity android:name=".ui.user.myOrders.PingjiaActivity" />
+        <activity android:name=".ui.user.FamilyActivity" />
+        <activity android:name=".ui.user.BrowserActivity" />
+        <activity android:name=".ui.user.MyTopicActivity"></activity>
+    </application>
+
+</manifest>

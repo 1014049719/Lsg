@@ -1,0 +1,13 @@
+package com.talenton.lsg.server.bean.user;
+
+/**
+ * Created by Wang.'''' on 2016/5/6.
+ */
+public class ShopPoints {
+
+    public String gid;
+    public String giftname;
+    public String imgurl;
+    public String points;
+    public String giftnum;
+}

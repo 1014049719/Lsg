@@ -1,0 +1,21 @@
+package com.talenton.lsg.base.server.bean;
+
+/**
+ * Created by ttt on 2016/4/20.
+ */
+public class SchoolData {
+
+    public final static SchoolData EMPTY = new SchoolData();
+    public long schoolid = 0;//学校ID
+    public String name;//学校名称
+    public String resideprovince;//省
+    public String residecity;//市
+    public String residedist;//区
+    public String address;//详细地址
+    public String memo;//备注
+    public String mobile;//联系电话
+
+    public SchoolData(){
+
+    }
+}

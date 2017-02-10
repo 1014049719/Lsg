@@ -1,0 +1,10 @@
+package com.talenton.lsg.server.bean.operation;
+
+import java.util.LinkedList;
+
+/**
+ * Created by ttt on 2016/4/5.
+ */
+public class RspHomeAdvertisement {
+    public LinkedList<HomeAdvertisement> list;
+}

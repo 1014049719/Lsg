@@ -1,0 +1,56 @@
+package com.talenton.lsg.server;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+
+import android.webkit.CookieManager;
+
+
+public class XLTHttpClientStack {
+	private static HashMap<String, String> CookieContiner = new HashMap<String, String>();
+
+	public static String getCookie(){
+
+		StringBuilder sb = new StringBuilder();
+		Iterator iter = CookieContiner.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			String key = entry.getKey().toString();
+			String val = entry.getValue().toString();
+			sb.append(key);
+			sb.append("=");
+			sb.append(val);
+			sb.append(";");
+		}
+		return sb.toString();
+	}
+	
+	public static void syncCookie(CookieManager manager,String url){
+		Iterator iter = CookieContiner.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			String key = entry.getKey().toString();
+			String val = entry.getValue().toString(); 
+			manager.setCookie(url, String.format("%s=%s;", key,val));
+		}
+		
+	}
+	
+	public static HashMap<String, String> getCookieMap(){
+		return CookieContiner;
+	}
+	
+	public static void setCookieMap(HashMap<String, String> cookies){
+		if(cookies!=null){
+			CookieContiner = cookies;
+		}
+	}
+	
+	public static void cleanCookieContiner(){
+		if(CookieContiner != null){
+			CookieContiner.clear();
+		}
+	}
+}

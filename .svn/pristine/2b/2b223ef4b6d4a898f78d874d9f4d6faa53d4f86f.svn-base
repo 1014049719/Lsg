@@ -1,0 +1,123 @@
+package com.talenton.lsg.ui.shop;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+
+import com.talenton.lsg.BaseListActivity;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.server.ShopServer;
+import com.talenton.lsg.server.bean.shop.GoodsInfo;
+import com.talenton.lsg.server.bean.shop.RecvClassifyDetailGoodsData;
+import com.talenton.lsg.server.bean.shop.RecvHotGoodsData;
+import com.talenton.lsg.ui.shop.adapter.GoodsAdapter;
+import java.util.ArrayList;
+
+/**
+ * Created by xiaoxiang on 2016/4/7.
+ */
+public class ClassifyAreaDetailActivity extends BaseListActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
+
+
+    private ArrayList<GoodsInfo> mGoodsDiscountInfoList;
+    private int cat_id;
+    private String name;
+    private Button button_new;
+    private Button button_sale;
+    private Button button_price;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_shop_classify_detail);
+
+        initView();
+        fillListData(0,0);//默认最新
+
+    }
+    /**
+     * 初始化view
+     * @param
+     */
+    private void initView() {
+
+
+        cat_id=getIntent().getIntExtra("cat_id", 0);
+        name = getIntent().getStringExtra("name");
+        mGoodsDiscountInfoList=new ArrayList<>();
+        setTitle(name);
+        button_new=(Button)findViewById(R.id.classify_detail_button_new);
+        button_new.setBackgroundResource(R.drawable.btn_main_bg_selector);
+        button_sale=(Button)findViewById(R.id.classify_detail_button_sale);
+        button_sale.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                button_sale.setBackgroundResource(R.drawable.btn_main_bg_selector);
+                button_new.setBackgroundResource(R.drawable.btn_normal);
+                fillListData(1, 0);//销售降序
+            }
+        });
+
+        button_price=(Button)findViewById(R.id.classify_detail_button_price);
+        button_price.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                button_sale.setBackgroundResource(R.drawable.btn_main_bg_selector);
+                button_new.setBackgroundResource(R.drawable.btn_normal);
+                fillListData(1, 0);//销售降序
+            }
+        });
+
+    }
+    /*
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.shop_text_discount_area;
+    }
+    */
+
+    @Override
+    protected int getPullRefreshListViewResId() {
+        return R.id.classify_detail_pull_refresh_list;
+    }
+
+    private void fillListData(int orderprice,int ordersalesnum) {
+
+
+        mGoodsDiscountInfoList=new ArrayList<GoodsInfo>();
+
+        startGetData(new ShopServer.ShopClassifyDetailListServer(cat_id,orderprice,ordersalesnum), new ListResponseCallback<RecvClassifyDetailGoodsData>() {
+            @Override
+            public void onSuccess(RecvClassifyDetailGoodsData data) {
+                mGoodsDiscountInfoList.clear();
+                mGoodsDiscountInfoList.addAll(data.getList());
+                mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(XLTError error) {
+
+            }
+        });
+        mAdapter = new GoodsAdapter(this,mGoodsDiscountInfoList,0);
+        mPullRefreshListView.getRefreshableView().setAdapter(mAdapter);
+        mPullRefreshListView.setOnItemClickListener(this);
+    }
+
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+        }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        //   position = position - mPullRefreshListView.getRefreshableView().getHeaderViewsCount();
+        GoodsInfo mGoodsInfo = (GoodsInfo) mAdapter.getItem(position);
+
+
+    }
+}
+

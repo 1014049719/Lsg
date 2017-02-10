@@ -1,0 +1,190 @@
+package com.talenton.lsg.ui.discovery;
+
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.LsgApplication;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.util.AppLogger;
+import com.talenton.lsg.base.util.Preference;
+import com.talenton.lsg.server.DiscoveryServer;
+import com.talenton.lsg.server.bean.discovery.LocatoinParam;
+import com.talenton.lsg.server.bean.discovery.RspTestSchool;
+import com.talenton.lsg.server.bean.discovery.TestSchool;
+import com.talenton.lsg.server.bean.discovery.TestSchoolParam;
+import com.talenton.lsg.ui.discovery.adapter.TestSchoolAdapter;
+import com.talenton.lsg.util.UIHelper;
+import com.talenton.lsg.widget.RegionSelectFragment;
+import com.talenton.lsg.widget.WebViewActivity;
+
+import java.util.LinkedList;
+
+public class TestSchoolActivity extends BaseCompatActivity {
+
+    //显示地区
+    MenuItem item1;
+    //已存储的位置
+    private String provinceStr;
+    private String cityStr;
+    private String areaStr;
+    //适配器
+    private TestSchoolAdapter testSchoolAdapter;
+
+    //声明对象
+    ListView listView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_test_school);
+
+        //获取网络数据
+        getTestSchoolData();
+        //实例化
+        listView= (ListView) findViewById(R.id.listView);
+        //装载适配器
+        testSchoolAdapter=new TestSchoolAdapter(LsgApplication.getAppContext(),new LinkedList<TestSchool>());
+        listView.setAdapter(testSchoolAdapter);
+
+        //取 已存的地区
+        provinceStr=Preference.getInstance().getTestSchoolLocation_province();
+        cityStr=Preference.getInstance().getTestSchoolLocation_city();
+        areaStr=Preference.getInstance().getTestSchoolLocation_area();
+        Log.d("存储的实验校位置", String.format("%s%s%s", provinceStr, cityStr, areaStr));
+
+
+        //实例化地区显示控件
+        item1 = mToolbar.getMenu().getItem(0);
+        if (provinceStr.equals("") && cityStr.equals("") && areaStr.equals("")) {
+
+            item1.setTitle("全部地区");
+        } else if ( !areaStr.equals("")){
+            item1.setTitle(areaStr);
+        }else if (areaStr.equals("") && !cityStr.equals("")){
+            item1.setTitle(cityStr);
+        }else{
+            item1.setTitle(provinceStr);
+        }
+
+        //设置item点击事件
+        setItemClick();
+
+    }
+
+    //设置item点击事件
+    private void setItemClick() {
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                AppLogger.d("dianjile" + position);
+                Intent intent=new Intent(LsgApplication.getAppContext(), WebViewActivity.class);
+                intent.putExtra("type","4");
+                startActivity(intent);
+            }
+        });
+    }
+
+    //获取网络数据
+    protected void getTestSchoolData(){
+
+        //位置参数
+        TestSchoolParam testSchoolParam = new TestSchoolParam();
+        testSchoolParam.resideprovince = Preference.getInstance().getTestSchoolLocation_province();
+        testSchoolParam.residecity= Preference.getInstance().getTestSchoolLocation_city();
+        testSchoolParam.residedist= Preference.getInstance().getTestSchoolLocation_area();
+
+        DiscoveryServer.getTestSchoolData(testSchoolParam, new XLTResponseCallback<RspTestSchool>() {
+            @Override
+            public void onResponse(RspTestSchool data, XLTError error) {
+
+                if (error == null && data != null) {
+                    //请求成功
+                    if (data.list != null && data.list.size() >= 0) {
+                        //先清空，再加载，通知刷新
+                        testSchoolAdapter.clear();
+                        testSchoolAdapter.setDatas(data.list);
+                        testSchoolAdapter.notifyDataSetChanged();
+                    }
+
+                } else {
+                    Log.d("门店列表数据请求错误", error.getMesssage());
+                }
+            }
+        });
+
+
+
+    }
+
+    //头部导航
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.testSchool_title;
+    }
+    //位置选择
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.menu_select_location;
+    }
+
+    @Override
+    protected void onRightClick(final MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.menu_select_location:
+
+                RegionSelectFragment fragment = RegionSelectFragment.newInstance(
+                        new RegionSelectFragment.OnClickReginSelectListener() {
+
+                            @Override
+                            public void onData(String province, String city, String area) {
+
+                                if (mToolbar != null && mToolbar.getMenu().size() > 0) {
+                                    if (area.equals("") && city.equals("")) {
+
+                                        Log.d("市区都为空", String.format("%s%s%s", province, city, area));
+                                        item1.setTitle(province);
+                                        //存位置 省
+                                        Preference.getInstance().setTestSchoolLocation_province(province);
+                                        Preference.getInstance().setTestSchoolLocation_city("");
+                                        Preference.getInstance().setTestSchoolLocation_area("");
+                                    } else if (area.equals("")) {
+
+                                        Log.d("区为空", String.format("%s%s%s", province, city, area));
+                                        item1.setTitle(city);
+                                        //存位置 省市
+                                        Preference.getInstance().setTestSchoolLocation_province(province);
+                                        Preference.getInstance().setTestSchoolLocation_city(city);
+                                        Preference.getInstance().setTestSchoolLocation_area("");
+                                    } else if ( !area.equals("")){
+                                        Log.d("详细地区", String.format("%s%s%s", province, city, area));
+                                        item1.setTitle(area);
+                                        //存位置 省市区
+                                        Preference.getInstance().setTestSchoolLocation_province(province);
+                                        Preference.getInstance().setTestSchoolLocation_city(city);
+                                        Preference.getInstance().setTestSchoolLocation_area(area);
+                                    }
+                                }
+                                //刷新数据
+                                getTestSchoolData();
+                            }
+                        });
+                UIHelper.showDialog(this, fragment, "RegionSelectFragment");
+
+                break;
+        }
+    }
+
+
+}

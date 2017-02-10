@@ -1,0 +1,98 @@
+package com.talenton.lsg.ui.discovery;
+
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.LsgApplication;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.util.AppLogger;
+import com.talenton.lsg.server.DiscoveryServer;
+import com.talenton.lsg.server.bean.discovery.Action;
+import com.talenton.lsg.server.bean.discovery.ActionParam;
+import com.talenton.lsg.server.bean.discovery.MessageParam;
+import com.talenton.lsg.server.bean.discovery.RspAction;
+import com.talenton.lsg.ui.discovery.adapter.ActionAdapter;
+import com.talenton.lsg.widget.WebViewActivity;
+
+import java.util.LinkedList;
+
+public class MessageAvtivity extends BaseCompatActivity {
+
+    //声明对象
+    private ListView listView;
+    //适配器
+    private ActionAdapter adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_message);
+
+        //请求数据
+        getActionListData();
+        //实例化
+        listView= (ListView) findViewById(R.id.listView);
+
+        //装载适配器
+        adapter=new ActionAdapter(LsgApplication.getAppContext(),new LinkedList<Action>());
+        listView.setAdapter(adapter);
+        //设置item点击事件
+        setItemClick();
+
+    }
+
+    //设置item点击事件
+    private void setItemClick() {
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                AppLogger.d("dianjile" + position);
+                Intent intent = new Intent(LsgApplication.getAppContext(), WebViewActivity.class);
+                intent.putExtra("type", "3");
+                startActivity(intent);
+            }
+        });
+    }
+
+    //请求数据
+    protected void getActionListData(){
+
+        MessageParam messageParam=new MessageParam();
+        DiscoveryServer.getMessageListData(messageParam, new XLTResponseCallback<RspAction>() {
+            @Override
+            public void onResponse(RspAction data, XLTError error) {
+
+                if (error == null && data != null) {
+                    if (data.list.size() >= 0) {
+
+                        //先清空，再刷新
+                        adapter.clear();
+                        adapter.setDatas(data.list);
+                        adapter.notifyDataSetChanged();
+                    }
+
+                } else {
+
+                    Log.d("活动列表数据请求错误", error.getMesssage());
+                }
+            }
+        });
+    }
+
+    //头部导航
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.message_title;
+    }
+
+}

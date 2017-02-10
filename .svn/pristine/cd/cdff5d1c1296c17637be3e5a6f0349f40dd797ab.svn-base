@@ -1,0 +1,326 @@
+package com.talenton.lsg.ui.shop;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import com.talenton.lsg.R;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.widget.CommonAlertDialog;
+import com.talenton.lsg.server.ShopServer;
+import com.talenton.lsg.server.bean.shop.AdressInfo;
+import com.talenton.lsg.server.bean.shop.RecvListAdressData;
+import com.talenton.lsg.server.bean.shop.SendDeleteAdressData;
+import com.talenton.lsg.server.bean.shop.SendListAdressData;
+
+import java.util.ArrayList;
+
+/**
+ * Created by xiaoxiang on 2016/4/22.
+ */
+/*
+管理收货地址
+ */
+public class ManageAdressActivity extends BaseCompatActivity implements View.OnClickListener,AdapterView.OnItemClickListener{
+
+
+    private Button mButton;
+   // private ArrayList<AdressInfo> mAdressInfoList;
+    private pick_class pickclass[];
+    private ListView mListView;
+    private AddressInAdapter mAdapter;
+    private CommonAlertDialog mDeleteOkDlg;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        setContentView(R.layout.activity_shop_manage_adress);
+        super.onCreate(savedInstanceState);
+        initView();
+        getAdressList();
+
+    }
+
+    public static void startManageAdressActivity(Context context){
+        Intent intent = new Intent(context, ManageAdressActivity.class);
+        context.startActivity(intent);
+    }
+    /**
+     * 初始化view
+     * @param
+     */
+    private void initView() {
+
+
+        mButton=(Button)findViewById(R.id.btn_add_address);
+        mButton.setOnClickListener(this);
+        mListView=(ListView)findViewById(R.id.adress_list_view);
+        mListView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+        mAdapter = new AddressInAdapter(this);
+        mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(this);
+
+
+    }
+
+    private void startEditActivity(AdressInfo mAdressInfo){
+        EditAddressActivity.startEditAddressActivity(this,mAdressInfo);
+    }
+
+    private void deleteAdressClick(final int addressId){
+        if (mDeleteOkDlg == null) {
+            mDeleteOkDlg = new CommonAlertDialog(this);
+            mDeleteOkDlg.setTitle("确定要删除该地址么");
+        }
+
+        String stringText = "删除请点击确定,不删除点击取消";
+        mDeleteOkDlg.setMessage(stringText);
+        mDeleteOkDlg.setPositiveButton(
+                getString(android.R.string.yes),
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDeleteOkDlg.dismiss();
+
+                        getDeleteAdress(addressId);
+
+
+                    }
+                });
+        mDeleteOkDlg.setNegativeButton(
+                getString(android.R.string.no),
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDeleteOkDlg.dismiss();
+                    }
+                });
+        mDeleteOkDlg.show();
+
+    }
+    private  void getDeleteAdress(int addressId){
+
+        ShopServer.getDeleteAdress(new SendDeleteAdressData(addressId),
+                new XLTResponseCallback<Object>() {
+
+                    @Override
+                    public void onResponse(Object data, XLTError error) {
+
+                        // TODO Auto-generated method stub
+
+                        if (data != null) {
+
+
+                        } else {
+
+
+                        }
+
+                    }
+
+
+                });
+    }
+
+    private  void getAdressList(){
+        SendListAdressData mSendListAdressData= new SendListAdressData();
+        ShopServer.getAdressListData(mSendListAdressData,
+                new XLTResponseCallback<RecvListAdressData>() {
+
+                    @Override
+                    public void onResponse(RecvListAdressData data, XLTError error) {
+
+                        // TODO Auto-generated method stub
+
+                        if (data != null) {
+
+                      //      mAdressInfoList = data.list;
+                            mAdapter.setData( data.list);
+                            pickclass=new pick_class[data.list.size()];
+                            for (int i = 0; i < data.list.size(); i++) {
+                                pickclass[i] = new pick_class();
+
+                            }
+
+                        } else {
+
+
+                        }
+
+                    }
+
+
+                });
+    }
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.shop_text_manage_address;
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent();
+        switch (v.getId()) {
+            case R.id.btn_add_address:
+                intent.setClass(ManageAdressActivity.this, AddNewAdressActivity.class);
+                startActivity(intent);
+                break;
+
+
+        }
+    }
+
+    public class AddressInAdapter extends BaseAdapter {
+        private LayoutInflater mInflater;
+        private ArrayList<AdressInfo> mAdressInfo;
+
+
+        public AddressInAdapter(Context context) {
+            mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            mAdressInfo = new ArrayList<AdressInfo>();
+
+
+        }
+
+        public int getCount() {
+            return mAdressInfo.size();
+        }
+
+        public void setData(ArrayList<AdressInfo> paths) {
+            mAdressInfo.clear();
+            mAdressInfo.addAll(paths);
+
+            notifyDataSetChanged();
+        }
+        public void changeSelected(int position){ //刷新方法
+
+            {
+
+
+                if(pickclass[position].mbSelect){
+                    pickclass[position].mbSelect=false;
+
+                }
+
+                else{
+                    for(int i=0;i<pickclass.length;i++){
+                        pickclass[i].mbSelect=false;
+                    }
+                    pickclass[position].mbSelect=true;
+
+                }
+
+            }
+            notifyDataSetChanged();
+
+        }
+
+
+        public AdressInfo getItem(int position) {
+            return mAdressInfo.get(position);
+        }
+
+        public long getItemId(int position) {
+            return position;
+        }
+
+
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            // TODO Auto-generated method stub
+            ViewHolder holder = null;
+            if (convertView == null) {
+                holder = new ViewHolder();
+                convertView = mInflater.inflate(R.layout.item_shop_address, parent, false);
+                holder.imageButton = (ImageButton)convertView.findViewById(R.id.shop_defalut_address);
+                holder.setDefault = (ImageButton)convertView.findViewById(R.id.shop_not_set_defalut_address);
+                holder.edit=(ImageButton)convertView.findViewById(R.id.shop_address_edit);
+                holder.delete=(ImageButton)convertView.findViewById(R.id.shop_delete_address);
+
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            holder.position = position;
+            final AdressInfo item = getItem(position);
+
+            holder.setDefault.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View arg0) {
+                    changeSelected(position);
+                }
+
+            });
+
+            holder.edit.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View arg0) {
+                    AdressInfo mAdressInfo = (AdressInfo) mAdapter.getItem(position);
+                    startEditActivity(mAdressInfo);
+
+
+                }
+
+            });
+
+            holder.delete.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View arg0) {
+                    AdressInfo mAdressInfo = (AdressInfo) mAdapter.getItem(position);
+
+                    deleteAdressClick(mAdressInfo.address_id);
+                }
+
+            });
+
+            if (pickclass[position].mbSelect) {
+
+                holder.setDefault.setImageResource((R.mipmap.icon_shop_set_default_address));
+
+            } else {
+
+                holder.setDefault.setImageResource((R.mipmap.icon_shop_not_set_defalut_address));
+            }
+
+            return convertView;
+        }
+
+        public class ViewHolder {
+            ImageButton imageButton;
+            ImageButton setDefault;
+            ImageButton delete;
+            ImageButton edit;
+            public int position;
+        }
+
+
+
+    }
+
+    public class pick_class{
+
+        public boolean mbSelect;//是否选中
+    }
+    @Override
+    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+
+    }
+}
+

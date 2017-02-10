@@ -1,0 +1,34 @@
+package com.talenton.lsg.ui.user.myOrders;
+
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.ImageView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.util.AppLogger;
+
+public class PingjiaActivity extends BaseCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pingjia);
+
+        String goods_thumb_str = getIntent().getStringExtra("goods_thumb");
+        AppLogger.d("图片地址" + goods_thumb_str);
+
+        //加载图片
+        ImageView goods_thumb_imageView= (ImageView) findViewById(R.id.goods_thumb_ImageView);
+        ImageLoader.getInstance().displayImage(goods_thumb_str,goods_thumb_imageView);
+
+    }
+
+    //头部导航
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.pingjia_title;
+    }
+}

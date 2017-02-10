@@ -1,0 +1,70 @@
+package com.talenton.lsg.ui.school;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.server.SchoolServer;
+import com.talenton.lsg.server.bean.school.ClassData;
+import com.talenton.lsg.server.bean.school.ReqClassList;
+import com.talenton.lsg.server.bean.school.RspListClass;
+import com.talenton.lsg.BaseListFragment;
+import com.talenton.lsg.ui.school.adapter.SchoolHomeAdapterMy;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author zjh
+ * @date 2016/4/22
+ */
+public class MyFavoritesFragment extends BaseListFragment {
+    private List<ClassData> myFavoriteDatas;
+
+    public MyFavoritesFragment() {
+    }
+
+    public static MyFavoritesFragment newInstance() {
+        MyFavoritesFragment fragment = new MyFavoritesFragment();
+        return fragment;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        ViewGroup v = (ViewGroup) inflater.inflate(R.layout.fragment_my_favorites, container, false);
+        super.onCreateView(inflater, v, savedInstanceState);
+        initActionBar(v);
+        fillData();
+        return v;
+    }
+
+    private void fillData() {
+        myFavoriteDatas = new ArrayList<>();
+        SchoolServer.SchoolClassListServer classListServer = new SchoolServer.SchoolClassListServer(new ReqClassList(ReqClassList.ClassListType.MY_COURSE));
+        startGetData(classListServer, new ListResponseCallback<RspListClass>() {
+            @Override
+            public void onSuccess(RspListClass data) {
+                myFavoriteDatas.addAll(data.getList());
+                mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(XLTError error) {
+
+            }
+        });
+        mAdapter = new SchoolHomeAdapterMy(getContext(),myFavoriteDatas);
+        mPullRefreshListView.setAdapter(mAdapter);
+    }
+
+
+    @Override
+    protected int getPullRefreshListViewResId() {
+        return R.id.list;
+    }
+
+}

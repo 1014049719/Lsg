@@ -1,0 +1,444 @@
+package com.talenton.lsg.ui.feed;
+
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
+import com.talenton.lsg.BaseCompatActivity;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.UserServer;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.server.bean.UserInfo;
+import com.talenton.lsg.base.server.task.TaskBase;
+import com.talenton.lsg.base.util.ImageLoaderManager;
+import com.talenton.lsg.base.widget.LoadingViewHolder;
+import com.talenton.lsg.event.AttentionAgeEvent;
+import com.talenton.lsg.event.FeedsTaskEvent;
+import com.talenton.lsg.server.FeedServer;
+import com.talenton.lsg.server.bean.feed.CircleInfo;
+import com.talenton.lsg.server.bean.feed.CircleListData;
+import com.talenton.lsg.server.bean.feed.Feeds;
+import com.talenton.lsg.server.bean.feed.MineCircle;
+import com.talenton.lsg.server.bean.feed.PostToParam;
+import com.talenton.lsg.server.bean.feed.ReqFeedsList;
+import com.talenton.lsg.server.bean.feed.RspFeedsList;
+import com.talenton.lsg.ui.feed.adapter.CircleFeedsAdapter;
+import com.talenton.lsg.util.UIHelper;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
+
+public class CircleFeedsActivity extends BaseCompatActivity implements View.OnClickListener {
+
+    private CircleFeedsAdapter mAdapter;
+    private static final int PAGE_SIZE = 20;
+    private int mCurPage, mSumCount;
+    private FrameLayout frameContent;
+    private LoadingViewHolder mLoading;
+    private PullToRefreshListView mPullRefreshListView;
+    private ListView mListView;
+    private View mEmptyHint, mCover;
+    private TextView mProgress;
+    private int mHeaderCount = 2;
+    private PostToParam mPostToParam;
+    private boolean mIsAttention = false;
+    private int mMmmberShowCount = 5;
+    private LayoutInflater mInflater;
+
+    public static void startCircleFeedsActivity(Context context, PostToParam postToParam){
+        Intent intent = new Intent(context, CircleFeedsActivity.class);
+        intent.putExtra("key_post_to", postToParam);
+        context.startActivity(intent);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_circle_feeds);
+
+        EventBus.getDefault().register(this);
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            mPostToParam = (PostToParam) intent.getSerializableExtra("key_post_to");
+        }
+        if (mPostToParam == null) {
+            finish();
+            return;
+        }
+        mPostToParam.name = TextUtils.isEmpty(mPostToParam.name) ? "关注的圈" : mPostToParam.name;
+        if(mActionBarTitle != null){
+            mActionBarTitle.setText(mPostToParam.name);
+        }
+
+        mPullRefreshListView = (PullToRefreshListView) findViewById(R.id.pull_refresh_list);
+
+        mPullRefreshListView.setMode(PullToRefreshBase.Mode.BOTH);
+        mPullRefreshListView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener2() {
+
+            @Override
+            public void onPullDownToRefresh(PullToRefreshBase refreshView) {
+                loadNewData();
+            }
+
+            @Override
+            public void onPullUpToRefresh(PullToRefreshBase refreshView) {
+                loadOlderData();
+            }
+
+        });
+
+        // 取得真实的View
+        mListView = mPullRefreshListView.getRefreshableView();
+        mListView.setOnScrollListener(new PauseOnScrollListener(ImageLoader.getInstance(), true, true));
+        mAdapter = new CircleFeedsAdapter(this, mPostToParam);
+        mListView.setAdapter(mAdapter);
+        mProgress = (TextView) findViewById(R.id.post_progress);
+        addCircleCoverView();
+        addFeedsEmptyView();
+        updatePostProgress();
+        mProgress.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                FeedsTaskActivity.startFeedsTaskActivity(CircleFeedsActivity.this, mPostToParam);
+                updatePostProgress();
+            }
+
+        });
+
+        frameContent = (FrameLayout)findViewById(R.id.frame_content);
+        View loading = findViewById(R.id.loading_container);
+        mLoading = new LoadingViewHolder(frameContent, loading, this, this);
+
+        mInflater = getLayoutInflater();
+        int space = 3 * getResources().getDimensionPixelSize(R.dimen.space_15_0);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels - space;
+        if (screenWidth > 0){
+            mMmmberShowCount = (screenWidth) / getResources().getDimensionPixelSize(R.dimen.height_40);
+            int mod = (screenWidth) % getResources().getDimensionPixelSize(R.dimen.height_40);
+            if(mod == 0 || mod < ((mMmmberShowCount-1) * getResources().getDimensionPixelSize(R.dimen.space_2_0))){
+                mMmmberShowCount --;
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(FeedsTaskEvent event){
+        mIsAttention = true;
+        updatePostProgress();
+        if(mAdapter == null || event == null) return;
+        Feeds feeds = event.feeds;
+        //mPhotoTimeContainer.setVisibility(View.INVISIBLE);
+        int anchor = mAdapter.replaceTask(feeds);
+
+        if (mAdapter.getCount() > 0) {
+            mEmptyHint.setVisibility(View.GONE);
+        }
+        if (anchor >= 0) {
+            mListView.setSelection(anchor + mHeaderCount);
+        }
+
+    }
+
+    @Override
+    public void onDestroy() {
+        // TODO Auto-generated method stub
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        loadData();
+        loadCircleInfo();
+    }
+
+    private void updatePostProgress() {
+
+        LinkedList<Feeds> feeds = FeedServer.listAllFeedsTask();
+        int pending = 0;
+        for (Feeds f : feeds) {
+            if (f.taskStatus != TaskBase.STATUS_SUCCESS ) {
+                ++pending;
+            }
+        }
+        if (pending == 0) {
+            mProgress.setVisibility(View.GONE);
+        } else {
+            mProgress.setVisibility(View.VISIBLE);
+            mProgress.setText(getString(R.string.post_feeds_progress, pending));
+        }
+    }
+
+    private void addCircleCoverView(){
+        FrameLayout footerParent = new FrameLayout(this);
+        footerParent.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        mCover = getLayoutInflater().inflate(R.layout.item_attention_feeds_cover, null);
+        mCover.findViewById(R.id.layout_arrow).setOnClickListener(this);
+        footerParent.addView(mCover);
+        mListView.addHeaderView(footerParent);
+        mHeaderCount = 3;
+    }
+
+    private void addFeedsEmptyView(){
+        FrameLayout footerParent = new FrameLayout(this);
+        footerParent
+                .setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mEmptyHint = getLayoutInflater().inflate(R.layout.item_feeds_empty, null);
+        mEmptyHint.findViewById(R.id.photo_time_container).setOnClickListener(this);
+        TextView tv = (TextView) mEmptyHint.findViewById(R.id.feeds_text_content);
+        tv.setText(getString(R.string.circle_feeds_item_empty, ""));
+        LinearLayout layout = (LinearLayout) mEmptyHint.findViewById(R.id.layout_empty);
+        int size = getResources().getDimensionPixelSize(R.dimen.space_15_0);
+        layout.setPadding(size, size, 0, 0);
+        mEmptyHint.findViewById(R.id.photo_time_container).setVisibility(View.GONE);
+        /*
+        mEmptyDay = (TextView) mEmptyHint.findViewById(R.id.photo_day);
+        mEmptyMonth = (TextView) mEmptyHint.findViewById(R.id.photo_month);
+        String photoTime = DateUtil.parseTimeToYMD(System.currentTimeMillis() / 1000);
+        mEmptyDay.setText(photoTime.substring(8));
+        mEmptyMonth.setText(photoTime.substring(0, 7));
+        */
+        footerParent.addView(mEmptyHint);
+        mListView.addHeaderView(footerParent);
+    }
+
+    private void setCoverView(CircleInfo data) {
+        if (mCover == null) {
+            return;
+        }
+
+        UserInfo userInfo = UserServer.getCurrentUser();
+        if (userInfo.uid > 0){
+            ImageView logo = (ImageView) mCover.findViewById(R.id.user_logo);
+            ImageLoader.getInstance().displayImage(userInfo.avartar, logo, ImageLoaderManager.DEFAULT_DISPLAYER);
+        }
+        TextView memberNum = (TextView) mCover.findViewById(R.id.member_num);
+        memberNum.setText(String.format("%d 成员", data.members_count));
+        TextView topicsNum = (TextView) mCover.findViewById(R.id.tv_topics_num);
+        if(data.topics_count > 0){
+            topicsNum.setText(String.format("今日 : %d",data.topics_count));
+        }
+        LinkedList<MineCircle> members = data.ext_attented_members;
+        if (members == null || members.size() == 0) return;
+        LinearLayout container = (LinearLayout) mCover.findViewById(R.id.layout_container);
+        for (int i = 0; i < mMmmberShowCount && i < members.size(); i++){
+            View view = mInflater.inflate(R.layout.item_circle_image_view, null);
+            ImageView iv = (ImageView)view.findViewById(R.id.member_logo);
+            ImageLoader.getInstance().displayImage(members.get(i).getCircleMember().avatar, iv, ImageLoaderManager.DEFAULT_DISPLAYER);
+            container.addView(view);
+        }
+    }
+
+    private void loadCircleInfo() {
+        FeedServer.getCircleInfo(mPostToParam.circleId, new XLTResponseCallback<CircleInfo>() {
+            @Override
+            public void onResponse(CircleInfo data, XLTError error) {
+                if (error == null && data != null && mCover != null) {
+                    setCoverView(data);
+                }
+            }
+        });
+    }
+
+    private void loadData(){
+        mLoading.showView(LoadingViewHolder.VIEW_TYPE_LOADING);
+        ReqFeedsList reqFeedsList = new ReqFeedsList();
+        reqFeedsList.circle_id = mPostToParam.circleId;
+        reqFeedsList.type = ReqFeedsList.LIST_LATEST;
+        reqFeedsList.circle_type = mPostToParam.circleType;
+        long time = getGraphTime();
+        reqFeedsList.graphtime = 0;
+        reqFeedsList.dateline = time;
+        reqFeedsList.dbdateline = time;
+
+        FeedServer.getFeedsList(reqFeedsList, new XLTResponseCallback<RspFeedsList>() {
+            @Override
+            public void onResponse(RspFeedsList data, XLTError error) {
+                if (error == null && data != null) {
+                    initData(data);
+                    mLoading.showView(LoadingViewHolder.VIEW_TYPE_DATA);
+                } else if (error != null) {
+                    mLoading.showView(LoadingViewHolder.VIEW_TYPE_NO_NOTWORK);
+                } else {
+                    mLoading.showView(LoadingViewHolder.VIEW_TYPE_NO_DATA);
+                }
+            }
+        });
+    }
+
+    private void loadNewData(){
+        //loadCircleInfo();
+
+        ReqFeedsList reqFeedsList = new ReqFeedsList();
+        reqFeedsList.circle_id = mPostToParam.circleId;
+        reqFeedsList.circle_type = mPostToParam.circleType;
+        reqFeedsList.type = ReqFeedsList.LIST_NEWER;
+        long time = getGraphTime();
+        reqFeedsList.graphtime = 0;
+        reqFeedsList.dateline = time;
+        reqFeedsList.dbdateline = time;
+
+        FeedServer.getFeedsList(reqFeedsList, new XLTResponseCallback<RspFeedsList>() {
+            @Override
+            public void onResponse(RspFeedsList data, XLTError error) {
+                mPullRefreshListView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPullRefreshListView.onRefreshComplete();
+                        mPullRefreshListView.setMode(PullToRefreshBase.Mode.BOTH);
+                    }
+                }, 1000);
+                if (error == null && data != null) {
+                    initData(data);
+                }
+            }
+        });
+    }
+
+    private void loadOlderData(){
+
+        if(mSumCount <= 0 || (mCurPage * 20) >= mSumCount) {
+
+            showShortToast(getString(R.string.toast_text_no_data));
+            mPullRefreshListView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mPullRefreshListView.onRefreshComplete();
+                }
+            }, 1000);
+            //mPullRefreshListView.setMode(PullToRefreshBase.Mode.PULL_FROM_START);
+            //mPullRefreshListView.getFooterLoadingView().setVisibility(View.GONE);
+            return;
+        }
+        mCurPage++;
+        ReqFeedsList reqFeedsList = new ReqFeedsList();
+        reqFeedsList.circle_id = mPostToParam.circleId;
+        reqFeedsList.circle_type = mPostToParam.circleType;
+        reqFeedsList.query_pager = String.valueOf(mCurPage);
+        reqFeedsList.type = ReqFeedsList.LIST_OLDER;
+        long time = getGraphTime();
+        reqFeedsList.graphtime = 0;
+        reqFeedsList.dateline = mAdapter.dateline;
+        reqFeedsList.dbdateline = mAdapter.dbdateline;
+
+        FeedServer.getFeedsList(reqFeedsList, new XLTResponseCallback<RspFeedsList>() {
+            @Override
+            public void onResponse(RspFeedsList data, XLTError error) {
+                mPullRefreshListView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPullRefreshListView.onRefreshComplete();
+                    }
+                }, 1000);
+                if (error == null && data != null && data.list != null) {
+                    mAdapter.addOldFeeds(data);
+                }
+            }
+        });
+    }
+
+    private void initData(RspFeedsList data){
+        mCurPage = 1;
+        mSumCount = data.count;
+        mAdapter.setFeeds(data);
+
+        if (mAdapter.getCount() == 0) {
+            mEmptyHint.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyHint.setVisibility(View.GONE);
+        }
+        /*
+        if(data.count < PAGE_SIZE){
+            mPullRefreshListView.setMode(PullToRefreshBase.Mode.PULL_FROM_START);
+            mPullRefreshListView.getFooterLoadingView().setVisibility(View.GONE);
+        }else {
+            mPullRefreshListView.setMode(PullToRefreshBase.Mode.BOTH);
+        }
+        */
+
+    }
+
+    @Override
+    protected int getTitleResourceId() {
+        return R.string.circle_title_mine_baby;
+    }
+
+    @Override
+    protected int getMenuResourceId() {
+        return R.menu.menu_feeds_post;
+    }
+
+    @Override
+    protected void onRightClick(MenuItem item){
+        PostTypeDialog dialog = PostTypeDialog.newInstance(mPostToParam);
+        UIHelper.showDialog(this, dialog, "PostTypeDialog");
+    }
+
+    @Override
+    public void finish() {
+        if (mIsAttention)
+            EventBus.getDefault().post(new AttentionAgeEvent(mIsAttention));
+        super.finish();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_reload:
+            case R.id.empty_action:
+                loadData();
+                break;
+            case R.id.layout_arrow:
+                CircleRankActivity.startCircleRankActivity(this, mPostToParam.circleId);
+                break;
+        }
+    }
+
+    private long getGraphTime(){
+
+        DateFormat df = DateFormat.getDateInstance();//日期格式，精确到日
+        Date date = new Date(System.currentTimeMillis());
+        Date d;
+        try {
+            d = df.parse(df.format(date));
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            d = date;
+            e.printStackTrace();
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(d);
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        return calendar.getTimeInMillis() / 1000;
+    }
+}

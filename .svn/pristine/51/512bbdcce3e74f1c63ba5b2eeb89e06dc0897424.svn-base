@@ -1,0 +1,258 @@
+package com.talenton.lsg.widget;
+
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.talenton.lsg.R;
+import com.talenton.lsg.base.server.XLTError;
+import com.talenton.lsg.base.server.XLTResponseCallback;
+import com.talenton.lsg.base.server.bean.FirstIssueData;
+import com.talenton.lsg.base.util.ImageLoaderManager;
+import com.talenton.lsg.base.util.SystemUtil;
+import com.talenton.lsg.server.OperationProjectServer;
+import com.talenton.lsg.base.server.UserServer;
+import com.talenton.lsg.server.bean.operation.HomeAdvertisement;
+import com.talenton.lsg.server.bean.operation.RspHomeAdvertisement;
+import com.talenton.lsg.util.CacheManager;
+import com.talenton.lsg.util.UIHelper;
+
+/**
+ * Created by ttt on 2016/4/5.
+ */
+public class HomeAdvertisementDialog extends DialogFragment implements View.OnClickListener {
+
+    public final static int HOME_AD_INDEX = 0;
+
+    private ImageView mAdvertisement;
+    private TextView mTimer;
+    private ImageView mAdvertisementLogo;
+    private Handler mHandler = new Handler();
+    private View.OnClickListener mOnClickListener;
+    private int mSecond = 0;
+    boolean isShowTimer = false;
+    boolean isClick = false;
+    //boolean isPostRunnable = false;
+    boolean isAutoDissmiss = false;
+    boolean isAutoRedirect = true;
+
+    public static HomeAdvertisementDialog newInstance(){
+        HomeAdvertisementDialog fragment = new HomeAdvertisementDialog();
+        return fragment;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (getActivity() instanceof View.OnClickListener) {
+            mOnClickListener = (View.OnClickListener) getActivity();
+        } else {
+            mOnClickListener = null;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+		/*
+		if(isAutoDissmiss){
+			DialogDismiss(false);
+		}
+		*/
+        //else if(isPostRunnable)
+        //	mHandler.postDelayed(mRunnable, 1000);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //if(isPostRunnable)
+        //	mHandler.removeCallbacks(mRunnable);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(mHandler != null){
+            mHandler.removeCallbacks(mRunnableCheck);
+            mHandler.removeCallbacks(mRunnable);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final Dialog dialog = new Dialog(getActivity(), R.style.common_dialog);
+        dialog.setContentView(R.layout.dialog_home_advertisement);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.WHITE));
+        dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                // TODO Auto-generated method stub
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        mAdvertisement = (ImageView)dialog.findViewById(R.id.iv_advertisement);
+        mTimer = (TextView)dialog.findViewById(R.id.tv_Advertisement_timer);
+        mAdvertisementLogo = (ImageView)dialog.findViewById(R.id.iv_advertisement_logo);
+        //mAdvertisementLogo.setOnClickListener(this);
+        FirstIssueData firstData = SystemUtil.getFirstIssueData();
+        if(firstData != null && firstData.resId > 0){
+            mAdvertisementLogo.setVisibility(View.VISIBLE);
+            mAdvertisementLogo.setImageResource(firstData.resId);
+        }else{
+            mAdvertisementLogo.setVisibility(View.GONE);
+        }
+        mTimer.setVisibility(View.GONE);
+        mAdvertisement.setOnClickListener(this);
+        isClick = false;
+        //isPostRunnable = false;
+        isAutoDissmiss = false;
+        isAutoRedirect = true;
+        HomeAdvertisement ha = CacheManager.getInstance().getHomeAdvertisement();
+        if(ha == null || ha.id == 0){
+            mSecond = 3;
+            isShowTimer = false;
+            if(mHandler != null){
+                mHandler.postDelayed(mRunnableCheck, 1000);
+            }
+        }else{
+            initDatas(ha);
+        }
+
+        return dialog;
+    }
+
+    private void initDatas(HomeAdvertisement ha) {
+        // TODO Auto-generated method stub
+        if(ha.id <= 0) DialogDismiss(false);
+        if(!TextUtils.isEmpty(ha.pagePic))
+            ImageLoader.getInstance().displayImage(ha.pagePic, mAdvertisement,
+                    ImageLoaderManager.DEFAULT_DISPLAYER);
+        isClick = true;
+        //isPostRunnable = true;
+        mSecond = ha.showTime;
+        isShowTimer = (ha.isShowCountdown == 1 && mSecond > 0);
+        isAutoRedirect = ha.isAutoRedirect == 1;
+        mTimer.setVisibility(isShowTimer ? View.VISIBLE : View.GONE);
+        mTimer.setText(""+mSecond);
+        if(mHandler != null){
+            mHandler.postDelayed(mRunnable, 1000);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        // TODO Auto-generated method stub
+        int id = v.getId();
+        if(id == R.id.iv_advertisement){
+            if(isClick){
+                DialogDismiss(true);
+            }
+        }
+    }
+
+    Runnable mRunnable = new Runnable(){
+
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            mSecond--;
+            if(mSecond <= 0 || mHandler == null){
+                mTimer.setText("");
+                isAutoDissmiss = true;
+                DialogDismiss(false);
+                return;
+            }
+            mTimer.setText(""+mSecond);
+            mHandler.postDelayed(mRunnable, 1000);
+        }
+    };
+
+    Runnable mRunnableCheck = new Runnable(){
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            mSecond--;
+            if(mSecond <= 0 || mHandler == null){
+                isAutoDissmiss = true;
+                DialogDismiss(false);
+                return;
+            }
+            HomeAdvertisement ha = CacheManager.getInstance().getHomeAdvertisement();
+            if(ha != null && ha.id > 0){
+                initDatas(ha);
+                return;
+            }
+            mHandler.postDelayed(mRunnableCheck, 1000);
+        }
+    };
+
+
+    private void DialogDismiss(boolean click){
+        if (getDialog() != null) {
+            try {
+                HomeAdvertisement ha = CacheManager.getInstance().getHomeAdvertisement();
+                if(ha != null){
+                    ha.isClick = click;
+                }
+                if (mOnClickListener != null) {
+                    mOnClickListener.onClick(mAdvertisement);
+                }
+                dismissAllowingStateLoss();
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void getHomeAdvertisement(int appType){
+
+        HomeAdvertisement ha = CacheManager.getInstance().getHomeAdvertisement();
+        if(ha != null && ha.id > 0) return;
+
+        OperationProjectServer.getHomeAdvertisement(appType, new XLTResponseCallback<RspHomeAdvertisement>() {
+            @Override
+            public void onResponse(RspHomeAdvertisement data, XLTError error) {
+                // TODO Auto-generated method stub
+                if (error == null && data != null && data.List != null) {
+                    CacheManager.getInstance().setHomeAdvertisement(data.List);
+                    preLoadImage(data.List.pagePic);
+                }
+            }
+        });
+    }
+
+    public static void preLoadImage(String url){
+        if(TextUtils.isEmpty(url)) return;
+        ImageLoader.getInstance().loadImageSync(url);
+    }
+
+    public static void goUrl(Activity context){
+        HomeAdvertisement ha = CacheManager.getInstance().getHomeAdvertisement();
+        if(ha != null && ha.isClick && !TextUtils.isEmpty(ha.pageUrl)){
+            //ActivityWebBrowser.goUrl(context, ha.pageUrl, "");
+        }
+    }
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="积分获得的描述"
+        android:layout_marginTop="@dimen/space_10"
+        android:layout_marginLeft="@dimen/space_10"
+        android:textSize="@dimen/text_34"
+        android:textColor="#666666" />
+    <TextView
+        android:id="@+id/dateline_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2016-5-4  14:47"
+        android:layout_below="@+id/desc_tv"
+        android:layout_marginLeft="@dimen/space_10"
+        android:layout_marginTop="@dimen/space_10"
+        android:textColor="#999999"/>
+    <TextView
+        android:id="@+id/points_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+100"
+        android:textColor="#f34e4a"
+        android:textSize="28sp"
+        android:layout_alignTop="@+id/desc_tv"
+        android:layout_marginTop="@dimen/space_10"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/space_10"/>
+
+</RelativeLayout>

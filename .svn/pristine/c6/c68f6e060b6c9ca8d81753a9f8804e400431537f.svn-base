@@ -1,0 +1,125 @@
+package com.talenton.lsg.widget;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.talenton.lsg.R;
+import com.talenton.lsg.event.LoginEvent;
+import com.talenton.lsg.ui.user.JumpType;
+import com.talenton.lsg.base.util.ImageLoaderManager;
+import com.talenton.lsg.base.util.Preference;
+import com.talenton.lsg.event.OpenMsgEvent;
+import com.talenton.lsg.event.PushMessageEvent;
+import com.talenton.lsg.ui.message.MsgActivity;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+/**
+ * @author zjh
+ * @date 2016/5/26
+ */
+public class MsgTipsView extends LinearLayout{
+    private TextView tv_unread;
+    private ImageView iv;
+
+    public MsgTipsView(Context context) {
+        super(context);
+        initView(context);
+    }
+
+    public MsgTipsView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        initView(context);
+    }
+
+    public MsgTipsView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        initView(context);
+    }
+
+    private void initView(final Context context){
+        EventBus.getDefault().register(this);
+        View view = LayoutInflater.from(context).inflate(R.layout.view_tips_msg,this,false);
+        iv = (ImageView) view.findViewById(R.id.iv);
+        tv_unread = (TextView) view.findViewById(R.id.tv_unread);
+        isShowTips();
+        view.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (JumpType.jump(JumpType.JUMP_TYPE_TOAST, context)) {
+                    return;
+                }
+                EventBus.getDefault().post(new OpenMsgEvent());
+                MsgActivity.startMsgActvity(context);
+            }
+        });
+        addView(view);
+    }
+
+    /**
+     * 是否显示红点
+     */
+    private void isShowTips() {
+        if (Preference.getInstance().hasPushMsg()){
+            tv_unread.setVisibility(VISIBLE);
+        }else {
+            tv_unread.setVisibility(INVISIBLE);
+        }
+    }
+
+    /**
+     * 隐藏红点提示
+     */
+    private void hideUnreadView() {
+        if (tv_unread.getVisibility() == VISIBLE) {
+            tv_unread.setVisibility(INVISIBLE);
+            Preference.getInstance().setPushMsg(false);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(PushMessageEvent pushMessageEvent) {
+        if (pushMessageEvent != null && tv_unread != null){
+            if (tv_unread.getVisibility() == INVISIBLE){
+                tv_unread.setVisibility(VISIBLE);
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(OpenMsgEvent msgEvent) {
+        if (msgEvent != null && tv_unread != null){
+            hideUnreadView();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(LoginEvent loginEvent) {
+        if (loginEvent != null && !loginEvent.isLogin()){
+            hideUnreadView();
+        }else {
+            isShowTips();
+        }
+    }
+
+
+    public void setImgSrc(String path){
+        if (iv != null){
+            ImageLoaderManager.getInstance().displayImage(path,iv);
+        }
+    }
+
+    public void setImgSrc(int resId){
+        if (iv != null){
+            iv.setImageResource(resId);
+        }
+    }
+
+}

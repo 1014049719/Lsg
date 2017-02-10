@@ -1,0 +1,15 @@
+/library-ijkplayer/library-ijkplayer.iml
+/library-Refresh/build
+/DaoGenerator/DaoGenerator.iml
+/libray-base/libray-base.iml
+/Lsg.iml
+*.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/7z-lib/build
+/pdfview-lib/build
+/captures
